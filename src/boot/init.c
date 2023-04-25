@@ -5,6 +5,14 @@
 #include <limits.h>
 #include <stdlib.h>
 #include "printk.h"
+#include "drivers/ns16550a.h"
+#include "drivers/clint.h"
+#include "banner.h"
+#include "libfdt.h"
+#include "libfdt_env.h"
+#include "fdt.h"
+#include "dts.h"
+#include "encoding.h"
 
 #define MCAUSE_INT                 63
 #define MCAUSE_MISALIGNED_FETCH    (((uint64_t)0 << MCAUSE_INT) | 0)
@@ -43,24 +51,26 @@ const char* DISPLAY_MCAUSE[] = {
 #define NB_EXCEPT 16
 #define NB_IT 64
 
-void handle_trap_none(uintptr_t cause, uintptr_t epc){
-  uintptr_t mtval;
-  asm volatile ("csrr %[reg], mtval" : [reg] "=r" (mtval));
-  printf("Bad trap: %x epc=%lx tval=%lx\n", cause, epc, mtval);
-  exit(1000+cause);
-}
 
-void (*handle_it_arr[NB_IT])(uintptr_t, uintptr_t) = { handle_trap_none };
-void (*handle_except_arr[NB_EXCEPT])(uintptr_t, uintptr_t) = { handle_trap_none };
+void (*handle_it_arr[NB_IT])(uintptr_t, uintptr_t) = { NULL };
+void (*handle_except_arr[NB_EXCEPT])(uintptr_t, uintptr_t) = { NULL };
 
 uintptr_t handle_trap(uintptr_t cause, uintptr_t epc, uintptr_t regs[32]){
-  if (cause >= MCAUSE_INTERRUPT) { // Interrupt
+  void (*handle)(uintptr_t, uintptr_t) = NULL;
+  char isit = cause >= MCAUSE_INTERRUPT;
+  if (isit) { // Interrupt
       uint64_t it = (cause - MCAUSE_INTERRUPT);
-      // printk("interruption %x, pc %x\n",it , epc);
-      handle_it_arr[it](cause, epc);
+      handle = handle_it_arr[it];
   } else { // Exception
-      // printk("exception %s, pc %x\n", DISPLAY_MCAUSE[cause], epc);
-      handle_except_arr[cause](cause, epc);
+      handle = handle_except_arr[cause];
+  }
+  if(handle){
+    handle(cause, epc);
+  } else {
+    uintptr_t mtval;
+    asm volatile ("csrr %[reg], mtval" : [reg] "=r" (mtval));
+    printf("Bad trap %s: %x epc=%lx tval=%lx\n", isit ? "IT" : DISPLAY_MCAUSE[cause], cause, epc, mtval);
+    exit(1000+cause);
   }
   (void) regs;
   return epc;
@@ -74,25 +84,13 @@ int __attribute__((weak)) main(int argc, char** argv){
   return -1;
 }
 
-#include "drivers/ns16550a.h"
-#include "banner.h"
-
-#include "libfdt.h"
-#include "libfdt_env.h"
-#include "fdt.h"
-#include "dts.h"
-
-#include "clint.h"
 #define ARIANE_UART_ADDR			  0x10000000
 #define ARIANE_UART_FREQ			  50000000
 #define ARIANE_UART_BAUDRATE		115200
 #define ARIANE_UART_REG_SHIFT		2
 #define ARIANE_UART_REG_WIDTH	  4
 
-
 #define  CLINT_INTERRUPT_PERIOD  1200000   
-
-#define NR_CPUS 64
 
 void park(){
   while(1);
@@ -110,14 +108,6 @@ void _trap(int i){
 }
 
 void _init(uint64_t cid, uint64_t dtb){
-    // Init trap handler
-    for(int i = 0; i < NB_EXCEPT; i++){
-      handle_except_arr[i] = handle_trap_none;
-    }
-    for(int i = 0; i < NB_IT; i++){
-      handle_it_arr[i] = handle_trap_none;
-    }
-
     // Only core 0 boots
     if(cid != 0){
       park();
@@ -147,6 +137,7 @@ void _init(uint64_t cid, uint64_t dtb){
     else {
       exit(1);
     }
+
 
     // Print banner
     puts(ZEPTOS_BANNER);
@@ -189,8 +180,14 @@ void _init(uint64_t cid, uint64_t dtb){
 
     // machine interrupt enable
     printk("Enable ITs\n");
-    asm volatile ("csrw mie, %[reg]" : : [reg] "r" ((uint32_t) 0x80));
-    asm volatile ("csrsi mstatus, 8");
+    // IRQ_M_SOFT, IRQ_M_TIMER, IRQ_M_EXT
+    uint32_t mie = MIP_MSIP | MIP_MTIP | MIP_MEIP;
+    asm volatile ("csrw mie, %[reg]" : : [reg] "r" ((uint32_t) mie));
+    asm volatile ("csrsi mstatus, 8"); // MSTATUS_MIE
+
+    // Sandbox
+    printk("Clint test MSWI\n");
+    clint_mswi_set(0);
 
     // Jump to main application
     char *argv[] = {"zeptos", "Hello World"};
