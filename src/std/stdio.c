@@ -16,7 +16,7 @@ int puts(const char *s) {
 }
 
 int printf(const char *s, ...) {
-    int     res = 0;
+    int res = 0;
     va_list vl;
     va_start(vl, s);
     res = vprintf(s, vl);
@@ -34,8 +34,8 @@ int snprintf(char *out, size_t n, const char *s, ...) {
 
 int vprintf(const char *s, va_list vl) {
     char *out;
-    int   res = vsnprintf(NULL, -1, s, vl);
-    out       = alloca(res + 1);
+    int res = vsnprintf(NULL, -1, s, vl);
+    out = alloca(res + 1);
     vsnprintf(out, res + 1, s, vl);
     while (*out)
         putchar(*out++);

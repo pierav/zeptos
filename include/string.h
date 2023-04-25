@@ -10,7 +10,7 @@ void *memmove(void *dest, const void *src, size_t n);
 
 char *strchr(const char *s, int c);
 char *strrchr(register const char *s, int c);
-unsigned long strtoul(const char * nptr, char **endptr, register int base);
+unsigned long strtoul(const char *nptr, char **endptr, register int base);
 
 int strcmp(const char *, const char *);
 size_t strlen(const char *);

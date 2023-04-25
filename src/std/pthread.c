@@ -1,21 +1,21 @@
+#include "config.h"
 #include "printk.h"
 #include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
-#include "config.h"
 
 #define MAX_THREADS CONFIG_NR_CPUS
 
 typedef enum _thread_state {
-    THREAD_IDLE     = 0,
-    THREAD_ACTIVE   = 1,
+    THREAD_IDLE = 0,
+    THREAD_ACTIVE = 1,
     THREAD_FINISHED = 2
 } _thread_state_t;
 
 typedef struct _thread_entry {
-    int             pid;
+    int pid;
     _thread_state_t state;
-    int             ret;
+    int ret;
 } _thread_entry_t;
 
 // Unimplemented types
@@ -54,7 +54,7 @@ struct pthread_barrier {
 };
 
 _thread_entry_t _threads[MAX_THREADS];
-int             cpt_threads = 0;
+int cpt_threads = 0;
 
 int pthread_attr_init(pthread_attr_t *attr) {
     (void)attr;
@@ -67,7 +67,7 @@ int pthread_attr_destroy(pthread_attr_t *attr) {
 }
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
-                   void *(*f)(void *), void                *args) {
+                   void *(*f)(void *), void *args) {
     printk("%d : %x ( %x )\n", cpt_threads, f, args);
     (void)attr;
     if (cpt_threads >= MAX_THREADS) {
@@ -76,10 +76,10 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
     }
     // Allocate thread
     _thread_entry_t *te = &_threads[cpt_threads];
-    te->pid             = cpt_threads;
-    te->state           = THREAD_ACTIVE;
-    te->ret             = -1; // Guard
-    *thread             = cpt_threads;
+    te->pid = cpt_threads;
+    te->state = THREAD_ACTIVE;
+    te->ret = -1; // Guard
+    *thread = cpt_threads;
 
     // Run thread on core
     // TODO clint IT wakeup !

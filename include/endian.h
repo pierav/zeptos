@@ -50,46 +50,46 @@ static inline uint64_t le64toh(uint64_t x) { return bswap64(x); }
 #define _leltoh le64toh
 #endif
 
-#define htobe(X) _Generic((X),                \
-                 short: htobe16,              \
-                 unsigned short: htobe16,     \
-                 int: htobe32,                \
-                 unsigned int: htobe32,       \
-                 long: _htobel,               \
-                 unsigned long: _htobel,      \
-                 long long: htobe64,          \
-                 unsigned long long: htobe64  \
-                 )(X)
+#define htobe(X)                                                               \
+    _Generic((X), short                                                        \
+             : htobe16, unsigned short                                         \
+             : htobe16, int                                                    \
+             : htobe32, unsigned int                                           \
+             : htobe32, long                                                   \
+             : _htobel, unsigned long                                          \
+             : _htobel, long long                                              \
+             : htobe64, unsigned long long                                     \
+             : htobe64)(X)
 
-#define betoh(X) _Generic((X),                \
-                 short: be16toh,              \
-                 unsigned short: be16toh,     \
-                 int: be32toh,                \
-                 unsigned int: be32toh,       \
-                 long: _beltoh,               \
-                 unsigned long: _beltoh,      \
-                 long long: be64toh,          \
-                 unsigned long long: be64toh  \
-                 )(X)
+#define betoh(X)                                                               \
+    _Generic((X), short                                                        \
+             : be16toh, unsigned short                                         \
+             : be16toh, int                                                    \
+             : be32toh, unsigned int                                           \
+             : be32toh, long                                                   \
+             : _beltoh, unsigned long                                          \
+             : _beltoh, long long                                              \
+             : be64toh, unsigned long long                                     \
+             : be64toh)(X)
 
-#define htole(X) _Generic((X),                \
-                 short: htole16,              \
-                 unsigned short: htole16,     \
-                 int: htole32,                \
-                 unsigned int: htole32,       \
-                 long: _htolel,               \
-                 unsigned long: _htolel,      \
-                 long long: htole64,          \
-                 unsigned long long: htole64  \
-                 )(X)
+#define htole(X)                                                               \
+    _Generic((X), short                                                        \
+             : htole16, unsigned short                                         \
+             : htole16, int                                                    \
+             : htole32, unsigned int                                           \
+             : htole32, long                                                   \
+             : _htolel, unsigned long                                          \
+             : _htolel, long long                                              \
+             : htole64, unsigned long long                                     \
+             : htole64)(X)
 
-#define letoh(X) _Generic((X),                \
-                 short: le16toh,              \
-                 unsigned short: le16toh,     \
-                 int: le32toh,                \
-                 unsigned int: le32toh,       \
-                 long: _leltoh,               \
-                 unsigned long: _leltoh,      \
-                 long long: le64toh,          \
-                 unsigned long long: le64toh  \
-                 )(X)
+#define letoh(X)                                                               \
+    _Generic((X), short                                                        \
+             : le16toh, unsigned short                                         \
+             : le16toh, int                                                    \
+             : le32toh, unsigned int                                           \
+             : le32toh, long                                                   \
+             : _leltoh, unsigned long                                          \
+             : _leltoh, long long                                              \
+             : le64toh, unsigned long long                                     \
+             : le64toh)(X)

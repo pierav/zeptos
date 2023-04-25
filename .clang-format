@@ -1,10 +1,2 @@
+BasedOnStyle: LLVM
 IndentWidth: 4
-AlignConsecutiveAssignments: true
-AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: true
-# AlignConsecutiveMacros: true
-AlignEscapedNewlines: Left
-AlignTrailingComments: true
-# AllowAllArgumentsOnNextLine: true
-AllowAllParametersOfDeclarationOnNextLine: true
-PointerAlignment: Right

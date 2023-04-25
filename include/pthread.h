@@ -5,7 +5,9 @@
 
 // Implemented types
 typedef int pthread_t;
-struct pthread_attr { int unused; };
+struct pthread_attr {
+    int unused;
+};
 
 // Unimplemented
 struct sched_param {
@@ -14,38 +16,38 @@ struct sched_param {
 typedef struct pthread_attr pthread_attr_t;
 typedef struct pthread_once pthread_once_t;
 
-typedef struct pthread_mutex     pthread_mutex_t;
+typedef struct pthread_mutex pthread_mutex_t;
 typedef struct pthread_mutexattr pthread_mutexattr_t;
 
-typedef struct pthread_cond     pthread_cond_t;
+typedef struct pthread_cond pthread_cond_t;
 typedef struct pthread_condattr pthread_condattr_t;
 
-typedef struct pthread_rwlock     pthread_rwlock_t;
+typedef struct pthread_rwlock pthread_rwlock_t;
 typedef struct pthread_rwlockattr pthread_rwlockattr_t;
 
 typedef struct pthread_spinlock pthread_spinlock_t;
 
-typedef struct pthread_barrier     pthread_barrier_t;
+typedef struct pthread_barrier pthread_barrier_t;
 typedef struct pthread_barrierattr pthread_barrierattr_t;
 
 typedef struct pthread_key pthread_key_t;
 typedef int clockid_t;
 
-int  pthread_create(pthread_t *__restrict, const pthread_attr_t *__restrict,
-                    void *(*)(void *), void *__restrict);
-int  pthread_detach(pthread_t);
+int pthread_create(pthread_t *__restrict, const pthread_attr_t *__restrict,
+                   void *(*)(void *), void *__restrict);
+int pthread_detach(pthread_t);
 void pthread_exit(void *);
-int  pthread_join(pthread_t, void **);
+int pthread_join(pthread_t, void **);
 
 pthread_t pthread_self(void);
 
 int pthread_equal(pthread_t, pthread_t);
 #define pthread_equal(x, y) ((x) == (y))
 
-int  pthread_setcancelstate(int, int *);
-int  pthread_setcanceltype(int, int *);
+int pthread_setcancelstate(int, int *);
+int pthread_setcanceltype(int, int *);
 void pthread_testcancel(void);
-int  pthread_cancel(pthread_t);
+int pthread_cancel(pthread_t);
 
 int pthread_getschedparam(pthread_t, int *__restrict,
                           struct sched_param *__restrict);
@@ -103,10 +105,10 @@ int pthread_barrier_init(pthread_barrier_t *__restrict,
 int pthread_barrier_destroy(pthread_barrier_t *);
 int pthread_barrier_wait(pthread_barrier_t *);
 
-int   pthread_key_create(pthread_key_t *, void (*)(void *));
-int   pthread_key_delete(pthread_key_t);
+int pthread_key_create(pthread_key_t *, void (*)(void *));
+int pthread_key_delete(pthread_key_t);
 void *pthread_getspecific(pthread_key_t);
-int   pthread_setspecific(pthread_key_t, const void *);
+int pthread_setspecific(pthread_key_t, const void *);
 
 int pthread_attr_init(pthread_attr_t *);
 int pthread_attr_destroy(pthread_attr_t *);
@@ -183,18 +185,18 @@ int pthread_getcpuclockid(pthread_t, clockid_t *);
 
 struct __ptcb {
     void (*__f)(void *);
-    void          *__x;
+    void *__x;
     struct __ptcb *__next;
 };
 
 void _pthread_cleanup_push(struct __ptcb *, void (*)(void *), void *);
 void _pthread_cleanup_pop(struct __ptcb *, int);
 
-#define pthread_cleanup_push(f, x) \
-    do {                           \
-        struct __ptcb __cb;        \
+#define pthread_cleanup_push(f, x)                                             \
+    do {                                                                       \
+        struct __ptcb __cb;                                                    \
         _pthread_cleanup_push(&__cb, f, x);
-#define pthread_cleanup_pop(r)        \
-    _pthread_cleanup_pop(&__cb, (r)); \
-    }                                 \
+#define pthread_cleanup_pop(r)                                                 \
+    _pthread_cleanup_pop(&__cb, (r));                                          \
+    }                                                                          \
     while (0)

@@ -1,3 +1,3 @@
 #pragma once
 
-#define alloca(size) __builtin_alloca (size)
+#define alloca(size) __builtin_alloca(size)

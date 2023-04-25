@@ -4,18 +4,18 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#define WRITEC(c)             \
-    do {                      \
-        if (out && pos < n) { \
-            out[pos] = (c);   \
-        }                     \
-        pos++;                \
+#define WRITEC(c)                                                              \
+    do {                                                                       \
+        if (out && pos < n) {                                                  \
+            out[pos] = (c);                                                    \
+        }                                                                      \
+        pos++;                                                                 \
     } while (0);
 
 int vsnprintf(char *out, size_t n, const char *s, va_list vl) {
-    int    format  = 0;
-    int    longarg = 0;
-    size_t pos     = 0;
+    int format = 0;
+    int longarg = 0;
+    size_t pos = 0;
     for (; *s; s++) {
         if (format) {
             // Default value
@@ -23,7 +23,7 @@ int vsnprintf(char *out, size_t n, const char *s, va_list vl) {
             switch (*s) {
             case 'l': {
                 longarg = 1;
-                format  = 1;
+                format = 1;
                 break;
             }
             case 'p': {
@@ -33,8 +33,8 @@ int vsnprintf(char *out, size_t n, const char *s, va_list vl) {
             }
             // Fall-through
             case 'x': {
-                long num       = longarg ? va_arg(vl, long) : va_arg(vl, int);
-                int  hexdigits = 2 * (longarg ? sizeof(long) : sizeof(int)) - 1;
+                long num = longarg ? va_arg(vl, long) : va_arg(vl, int);
+                int hexdigits = 2 * (longarg ? sizeof(long) : sizeof(int)) - 1;
                 for (int i = hexdigits; i >= 0; i--) {
                     int d = (num >> (4 * i)) & 0xF;
                     WRITEC((d < 10 ? '0' + d : 'a' + d - 10));

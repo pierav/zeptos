@@ -9,23 +9,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define handle_error_en(en, msg) \
-    do {                         \
-        errno = en;              \
-        perror(msg);             \
-        exit(EXIT_FAILURE);      \
+#define handle_error_en(en, msg)                                               \
+    do {                                                                       \
+        errno = en;                                                            \
+        perror(msg);                                                           \
+        exit(EXIT_FAILURE);                                                    \
     } while (0)
 
-#define handle_error(msg)   \
-    do {                    \
-        perror(msg);        \
-        exit(EXIT_FAILURE); \
+#define handle_error(msg)                                                      \
+    do {                                                                       \
+        perror(msg);                                                           \
+        exit(EXIT_FAILURE);                                                    \
     } while (0)
 
-struct thread_info {       /* Used as argument to thread_start() */
-    pthread_t thread_id;   /* ID returned by pthread_create() */
-    int       thread_num;  /* Application-defined thread # */
-    char *    argv_string; /* From command-line argument */
+struct thread_info {     /* Used as argument to thread_start() */
+    pthread_t thread_id; /* ID returned by pthread_create() */
+    int thread_num;      /* Application-defined thread # */
+    char *argv_string;   /* From command-line argument */
 };
 
 /* Thread start function: display address near top of our stack,
@@ -33,7 +33,7 @@ struct thread_info {       /* Used as argument to thread_start() */
 
 static void *thread_start(void *arg) {
     struct thread_info *tinfo = arg;
-    char *              uargv, *p;
+    char *uargv, *p;
 
     printf("Thread %d: top of stack near %p; argv_string=%s\n",
            tinfo->thread_num, &p, tinfo->argv_string);
@@ -51,14 +51,14 @@ static void *thread_start(void *arg) {
 int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
-    int                 s, tnum, num_threads;
+    int s, tnum, num_threads;
     struct thread_info *tinfo;
-    pthread_attr_t      attr;
-    int                 stack_size;
-    void *              res;
+    pthread_attr_t attr;
+    int stack_size;
+    void *res;
 
-    stack_size     = -1;
-    num_threads    = 4;
+    stack_size = -1;
+    num_threads = 4;
     char *tnames[] = {"Thread0", "Victim", "Hello World", "Teddy"};
     /* Initialize thread creation attributes */
 
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     /* Create one thread for each command-line argument */
 
     for (tnum = 0; tnum < num_threads; tnum++) {
-        tinfo[tnum].thread_num  = tnum;
+        tinfo[tnum].thread_num = tnum;
         tinfo[tnum].argv_string = tnames[tnum];
         /* The pthread_create() call stores the thread ID into
            corresponding element of tinfo[] */

@@ -7,10 +7,10 @@
 
 static int fdt_get_node_addr_size(void *fdt, int node, uintptr_t *addr,
                                   unsigned long *size, const char *field) {
-    int            parent, len, i;
-    int            cell_addr, cell_size;
+    int parent, len, i;
+    int cell_addr, cell_size;
     const fdt32_t *prop_addr, *prop_size;
-    uint64_t       temp = 0;
+    uint64_t temp = 0;
 
     parent = fdt_parent_offset(fdt, node);
     if (parent < 0)
@@ -49,7 +49,7 @@ static int fdt_get_node_addr_size(void *fdt, int node, uintptr_t *addr,
 }
 
 static int check_cpu_node(void *fdt, int cpu_offset) {
-    int         len;
+    int len;
     const void *prop;
 
     if (!fdt || cpu_offset < 0)
@@ -92,7 +92,7 @@ int fdt_parse_clint(void *fdt, uintptr_t *clint_addr, const char *compatible) {
 
 int fdt_parse_plic(void *fdt, uintptr_t *plic_addr, uint32_t *ndev,
                    const char *compatible) {
-    int            nodeoffset, len, rc;
+    int nodeoffset, len, rc;
     const fdt32_t *ndev_p;
 
     nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compatible);
@@ -113,7 +113,7 @@ int fdt_parse_plic(void *fdt, uintptr_t *plic_addr, uint32_t *ndev,
 
 int fdt_parse_ns16550(void *fdt, uintptr_t *ns16550_addr, uint32_t *reg_shift,
                       uint32_t *reg_io_width, const char *compatible) {
-    int            nodeoffset, len, rc;
+    int nodeoffset, len, rc;
     const fdt32_t *reg_p;
 
     nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compatible);
@@ -176,7 +176,7 @@ int fdt_parse_pmp_alignment(void *fdt, int cpu_offset, uintptr_t *pmp_align) {
 int fdt_parse_mmu_type(void *fdt, int cpu_offset, const char **mmu_type) {
     assert(mmu_type);
 
-    int         len, rc;
+    int len, rc;
     const void *prop;
 
     if ((rc = check_cpu_node(fdt, cpu_offset)) < 0)
@@ -193,13 +193,13 @@ int fdt_parse_mmu_type(void *fdt, int cpu_offset, const char **mmu_type) {
 
 int fdt_parse_cpus(void *fdt, int *nr_cpus) {
     *nr_cpus = 0;
-    int off  = 0;
+    int off = 0;
     do {
         off = fdt_node_offset_by_prop_value(fdt, off, "device_type", "cpu", 4);
         if (off > 0) {
             printk("Got CPU %d @%d\n", nr_cpus, off);
             const void *prop;
-            int         len;
+            int len;
 
             prop = fdt_getprop(fdt, off, "compatible", &len);
             if (!prop || !len)

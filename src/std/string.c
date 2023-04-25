@@ -42,18 +42,18 @@ char *strrchr(register const char *s, int c) {
 }
 
 unsigned long strtoul(const char *nptr, char **endptr, register int base) {
-    register const char   *s = nptr;
+    register const char *s = nptr;
     register unsigned long acc;
-    register int           c;
+    register int c;
     register unsigned long cutoff;
-    register int           neg = 0, any, cutlim;
+    register int neg = 0, any, cutlim;
 
     do {
         c = *s++;
     } while (isspace(c));
     if (c == '-') {
         neg = 1;
-        c   = *s++;
+        c = *s++;
     } else if (c == '+')
         c = *s++;
     if ((base == 0 || base == 16) && c == '0' && (*s == 'x' || *s == 'X')) {
@@ -83,7 +83,7 @@ unsigned long strtoul(const char *nptr, char **endptr, register int base) {
         }
     }
     if (any < 0) {
-        acc   = ULONG_MAX;
+        acc = ULONG_MAX;
         errno = ERANGE;
     } else if (neg)
         acc = -acc;
@@ -121,7 +121,7 @@ char *strncpy(char *dst, const char *src, size_t n) {
 }
 
 char *strdup(const char *s) {
-    char  *copy;
+    char *copy;
     size_t len = strlen(s) + 1;
     if (!(copy = malloc(len)))
         return (NULL);
@@ -160,7 +160,7 @@ void *memcpy(void *dest, const void *src, size_t n) {
 
 void *memmove(void *dest, const void *src, size_t n) {
     unsigned char *from = (unsigned char *)src;
-    unsigned char *to   = (unsigned char *)dest;
+    unsigned char *to = (unsigned char *)dest;
 
     if (from == to || n == 0)
         return dest;
