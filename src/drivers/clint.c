@@ -1,3 +1,4 @@
+#include "clint.h"
 #include <assert.h>
 #include <printk.h>
 #include <stdint.h>
@@ -14,9 +15,8 @@ static uint64_t timer_period;
 void clint_timer_it(uintptr_t cause, uintptr_t epc) {
     (void)(cause);
     (void)(epc);
-    printk("MINT\n");
+    printk("IT\n");
     *mtimecmp = *mtime + timer_period;
-    // printf("MINT END\n");
 }
 
 void clint_ipi_it(uintptr_t cause, uintptr_t epc) {
@@ -24,18 +24,8 @@ void clint_ipi_it(uintptr_t cause, uintptr_t epc) {
     (void)(epc);
     uint64_t mhartid;
     asm volatile("csrr %[reg], mhartid" : [reg] "=r"(mhartid));
-    printk("clint_ipi_it %d TODO\n", mhartid);
+    printk("%d TODO\n", mhartid);
     clint_mswi_unset(mhartid);
-}
-
-void printf_status(uint64_t mstatus, uint64_t mie, uint64_t mip,
-                   uint64_t mcause) {
-    asm volatile("csrr %[reg], mie" : [reg] "=r"(mie));
-    asm volatile("csrr %[reg], mip" : [reg] "=r"(mip));
-    asm volatile("csrr %[reg], mstatus" : [reg] "=r"(mstatus));
-    asm volatile("csrr %[reg], mcause" : [reg] "=r"(mcause));
-    printf("mie=%x, mip=%x, mstatus=%x, mcause=%x\r\n", mie, mip, mstatus,
-           mcause);
 }
 
 int clint_init(uintptr_t clint_addr, uint64_t period) {
@@ -43,8 +33,6 @@ int clint_init(uintptr_t clint_addr, uint64_t period) {
     mtimecmp = (uint64_t *)(clint_addr + 0x4000);
     mtime = (uint64_t *)(clint_addr + 0xbff8);
     timer_period = period;
-    // printf("mtimecmp=%x\n, mtime=%x\n", mtimecmp, mtime);
-    // *mtimecmp = *mtime + mtime_INTERRUPT_PERIOD;
     return 0;
 }
 

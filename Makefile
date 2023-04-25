@@ -24,7 +24,7 @@ CFLAGS 		:= -DPREALLOCATE=1 -mcmodel=medany \
 			  -nostdinc \
 			  -ffast-math -fno-common -fno-builtin-printf -fno-builtin \
 			  -fno-tree-loop-distribute-patterns \
-			  -DZEPTOS_BANNER_EXTRA=v0.0.0 \
+			  -DCONFIG_ZEPTOS_BANNER_EXTRA=v0.0.0 \
 			  $(INCS)
 
 

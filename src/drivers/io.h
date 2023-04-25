@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define CLAMP(a, lo, hi) MIN(MAX(a, lo), hi)
