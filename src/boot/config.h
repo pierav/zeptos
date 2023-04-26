@@ -8,3 +8,7 @@
 #ifndef CONFIG_ZEPTOS_BANNER_EXTRA
 #define CONFIG_ZEPTOS_BANNER_EXTRA ""
 #endif
+
+#ifndef CONFIG_NOPRINTK
+#define CONFIG_NOPRINTK 1
+#endif

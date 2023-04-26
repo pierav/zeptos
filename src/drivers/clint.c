@@ -1,6 +1,7 @@
 #include "clint.h"
 #include <assert.h>
 #include <printk.h>
+#include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -15,7 +16,7 @@ static uint64_t timer_period;
 void clint_timer_it(uintptr_t cause, uintptr_t epc) {
     (void)(cause);
     (void)(epc);
-    printk("IT\n");
+    // printk("IT\n");
     *mtimecmp = *mtime + timer_period;
 }
 
@@ -24,8 +25,9 @@ void clint_ipi_it(uintptr_t cause, uintptr_t epc) {
     (void)(epc);
     uint64_t mhartid;
     asm volatile("csrr %[reg], mhartid" : [reg] "=r"(mhartid));
-    printk("%d TODO\n", mhartid);
     clint_mswi_unset(mhartid);
+    // Attach thread
+    _pthread_attach(mhartid);
 }
 
 int clint_init(uintptr_t clint_addr, uint64_t period) {

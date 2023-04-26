@@ -11,3 +11,5 @@
     " /    |-' | | |   \\   / .   ) \n"                                        \
     "'---' `-' |-' `-'  `-'   `-'  \n"                                         \
     "          '       " xstr(CONFIG_ZEPTOS_BANNER_EXTRA) "\n"
+
+#define PRINT_BANNER() puts(ZEPTOS_BANNER);

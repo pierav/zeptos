@@ -200,3 +200,5 @@ void _pthread_cleanup_pop(struct __ptcb *, int);
     _pthread_cleanup_pop(&__cb, (r));                                          \
     }                                                                          \
     while (0)
+
+void _pthread_attach(uint64_t pid);

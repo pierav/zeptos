@@ -49,7 +49,9 @@ const char *DISPLAY_MCAUSE[] = {[0] = "MISALIGNED_FETCH",
 #define NB_EXCEPT 16
 #define NB_IT 64
 
-void (*handle_it_arr[NB_IT])(uintptr_t, uintptr_t) = {NULL};
+void (*handle_it_arr[NB_IT])(uintptr_t, uintptr_t) = {[3] = clint_ipi_it,
+                                                      [7] = clint_timer_it};
+
 void (*handle_except_arr[NB_EXCEPT])(uintptr_t, uintptr_t) = {NULL};
 
 uintptr_t handle_trap(uintptr_t cause, uintptr_t epc, uintptr_t regs[32]) {
@@ -109,6 +111,9 @@ void _trap(int i) {
 void _init(uint64_t cid, uint64_t dtb) {
     // Only core 0 boots
     if (cid != 0) {
+        uint32_t mie = MIP_MSIP; // Only enable Soft INT
+        asm volatile("csrw mie, %[reg]" : : [reg] "r"((uint32_t)mie));
+        asm volatile("csrsi mstatus, 8"); // MSTATUS_MIE
         park();
     }
 
@@ -135,7 +140,7 @@ void _init(uint64_t cid, uint64_t dtb) {
     }
 
     // Print banner
-    puts(ZEPTOS_BANNER);
+    PRINT_BANNER();
     printk("Boot core [%d] / DTB=@%x\n", cid, fdt);
     printk("DTB[0] = %x\n", *(uint64_t *)fdt);
     printk("%x.uart %s driver %2x/%2x\n", ns16550_addr, compatible, reg_shift,
@@ -172,7 +177,7 @@ void _init(uint64_t cid, uint64_t dtb) {
     printk("%x.%s register IT %x with clint_ipi_it\n", clint_addr,
            clint_compatible, 3);
     handle_it_arr[7] = clint_timer_it;
-    handle_it_arr[3] = clint_ipi_it;
+    // handle_it_arr[3] = clint_ipi_it;
     // register IT TODO FDT id
 
     // machine interrupt enable
@@ -182,20 +187,14 @@ void _init(uint64_t cid, uint64_t dtb) {
     asm volatile("csrw mie, %[reg]" : : [reg] "r"((uint32_t)mie));
     asm volatile("csrsi mstatus, 8"); // MSTATUS_MIE
 
-    // Sandbox
-    printk("Clint test MSWI\n");
-    clint_mswi_set(0);
-
     // Jump to main application
     char *argv[] = {"zeptos", "Hello World"};
     printk("launch main!\n");
 
     int ret = main(2, argv);
 
-    // sleep
-    while (1) {
-        asm volatile("wfi");
-    }
+    printk("Shutdown...\n");
 
+    // sleep
     exit(ret);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -15,16 +16,22 @@ static inline uint32_t rdcyc() {
 
 extern int printk_time;
 
+#if CONFIG_NOPRINTK
 #define printk(fmt, ...)                                                       \
     do {                                                                       \
-        printf("[%8lx/%2d] " __MODULE__ "::%s: ", rdcyc(), printk_time++,      \
-               __PRETTY_FUNCTION__);                                           \
-        printf(fmt, ##__VA_ARGS__);                                            \
+        ;                                                                      \
     } while (0);
+#else
+#define printk(fmt, ...)                                                       \
+    do {                                                                       \
+        printf("[%8lx/%2d] " __MODULE__ "::%s: " fmt, rdcyc(), printk_time++,  \
+               __PRETTY_FUNCTION__, ##__VA_ARGS__);                            \
+    } while (0);
+#endif
 
 #define panic(fmt, ...)                                                        \
     do {                                                                       \
-        printk(" *** Kernel panic *** ");                                      \
+        printk(" *** Kernel panic *** \n");                                    \
         printk(fmt, ##__VA_ARGS__);                                            \
         exit(1);                                                               \
     } while (0);

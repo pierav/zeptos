@@ -15,12 +15,17 @@ int puts(const char *s) {
     return 0;
 }
 
+#include "lock.h"
+static atomic_t printf_lock = {.counter = 0};
+
 int printf(const char *s, ...) {
+    get_lock(&printf_lock);
     int res = 0;
     va_list vl;
     va_start(vl, s);
     res = vprintf(s, vl);
     va_end(vl);
+    put_lock(&printf_lock);
     return res;
 }
 

@@ -1,4 +1,5 @@
 #include "config.h"
+#include "drivers/clint.h"
 #include "printk.h"
 #include <errno.h>
 #include <pthread.h>
@@ -8,14 +9,17 @@
 
 typedef enum _thread_state {
     THREAD_IDLE = 0,
-    THREAD_ACTIVE = 1,
-    THREAD_FINISHED = 2
+    THREAD_ALLOCATED,
+    THREAD_ACTIVE,
+    THREAD_FINISHED
 } _thread_state_t;
 
-typedef struct _thread_entry {
+typedef volatile struct _thread_entry {
     int pid;
     _thread_state_t state;
-    int ret;
+    void *(*func)(void *);
+    void *args;
+    void *ret;
 } _thread_entry_t;
 
 // Unimplemented types
@@ -77,19 +81,33 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
     // Allocate thread
     _thread_entry_t *te = &_threads[cpt_threads];
     te->pid = cpt_threads;
-    te->state = THREAD_ACTIVE;
-    te->ret = -1; // Guard
+    te->state = THREAD_ALLOCATED;
+    te->ret = NULL; // Guard
+    te->func = f;
+    te->args = args;
     *thread = cpt_threads;
 
-    // Run thread on core
+    // Run thread on core[PID]
+    clint_mswi_set(te->pid);
     // TODO clint IT wakeup !
 
     cpt_threads++;
     return 0;
 }
 
+void _pthread_attach(uint64_t pid) {
+    printk("%d\n", pid);
+    _thread_entry_t *te = &_threads[pid];
+    if (te->state != THREAD_ALLOCATED) {
+        panic("Thread %d is not allocated\n", pid);
+    }
+    te->state = THREAD_ACTIVE;
+    te->ret = te->func(te->args);
+    te->state = THREAD_FINISHED;
+    return;
+}
+
 int pthread_join(pthread_t thread, void **retval) {
-    // TODO
     /*
     EDEADLK A deadlock was detected (e.g., two threads tried to join with each
     other); or thread specifies the calling thread. EINVAL thread is not a
@@ -104,7 +122,7 @@ int pthread_join(pthread_t thread, void **retval) {
         ; /* Wait FINISHED */
     }
     if (retval) { // copies the exit status of the target thread
-        *(uintptr_t *)(*retval) = te->ret;
+        (*retval) = te->ret;
     }
     return 0;
 }
