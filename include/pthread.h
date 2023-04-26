@@ -1,26 +1,105 @@
 #pragma once
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 
+/*
+ * Run-time invariant values:
+ */
+#define PTHREAD_DESTRUCTOR_ITERATIONS 4
+#define PTHREAD_KEYS_MAX 256
+#define PTHREAD_STACK_MIN (2048)
+#define PTHREAD_THREADS_MAX ULONG_MAX
+
+/*
+ * Flags for threads and thread attributes.
+ */
+#define PTHREAD_DETACHED 0x1
+#define PTHREAD_SCOPE_SYSTEM 0x2
+#define PTHREAD_INHERIT_SCHED 0x4
+#define PTHREAD_NOFLOAT 0x8
+
+#define PTHREAD_CREATE_DETACHED PTHREAD_DETACHED
+#define PTHREAD_CREATE_JOINABLE 0
+#define PTHREAD_SCOPE_PROCESS 0
+#define PTHREAD_EXPLICIT_SCHED 0
+
+/*
+ * Flags for read/write lock attributes
+ */
+#define PTHREAD_PROCESS_PRIVATE 0
+#define PTHREAD_PROCESS_SHARED 1
+
+/*
+ * Flags for cancelling threads
+ */
+#define PTHREAD_CANCEL_ENABLE 0
+#define PTHREAD_CANCEL_DISABLE 1
+#define PTHREAD_CANCEL_DEFERRED 0
+#define PTHREAD_CANCEL_ASYNCHRONOUS 2
+#define PTHREAD_CANCELED ((void *)1)
+
+/*
+ * Barrier flags
+ */
+#define PTHREAD_BARRIER_SERIAL_THREAD -1
+
 // Implemented types
+
+/*** pthread_t  ***/
 typedef int pthread_t;
-struct pthread_attr {
+typedef struct pthread_attr {
     int unused;
-};
+} pthread_attr_t;
+
+/*** pthread_mutex_t  ***/
+#define PTHREAD_MUTEX_INITIALIZER                                              \
+    { 0 }
+typedef struct pthread_mutex {
+    int counter;
+} pthread_mutex_t;
+typedef struct pthread_mutexattr {
+    int unused;
+} pthread_mutexattr_t;
+
+/*** pthread_cond_t  ***/
+typedef struct pthread_cond {
+    uint64_t users;
+} pthread_cond_t;
+typedef struct pthread_condattr {
+    int unused;
+} pthread_condattr_t;
+
+// static inline int atomic_xchg(atomic_t *v, int n) {
+//     register int c;
+
+//     __asm__ __volatile__("amoswap.w.aqrl %0, %2, %1"
+//                          : "=r"(c), "+A"(v->counter)
+//                          : "r"(n));
+//     return c;
+// }
+
+// static inline void mb(void) {
+//     // __asm__ __volatile__ ("fence");
+// }
+
+// void get_lock(atomic_t *lock) {
+//     while (atomic_xchg(lock, 1) == 1)
+//         ;
+//     mb();
+// }
+
+// void put_lock(atomic_t *lock) {
+//     mb();
+//     atomic_xchg(lock, 0);
+// }
 
 // Unimplemented
 struct sched_param {
     int unimplemented;
 };
-typedef struct pthread_attr pthread_attr_t;
 typedef struct pthread_once pthread_once_t;
-
-typedef struct pthread_mutex pthread_mutex_t;
-typedef struct pthread_mutexattr pthread_mutexattr_t;
-
-typedef struct pthread_cond pthread_cond_t;
-typedef struct pthread_condattr pthread_condattr_t;
 
 typedef struct pthread_rwlock pthread_rwlock_t;
 typedef struct pthread_rwlockattr pthread_rwlockattr_t;
@@ -119,8 +198,10 @@ int pthread_attr_setguardsize(pthread_attr_t *, size_t);
 int pthread_attr_getstacksize(const pthread_attr_t *__restrict,
                               size_t *__restrict);
 int pthread_attr_setstacksize(pthread_attr_t *, size_t);
-int pthread_attr_getdetachstate(const pthread_attr_t *, int *);
-int pthread_attr_setdetachstate(pthread_attr_t *, int);
+
+int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
+int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
+
 int pthread_attr_getstack(const pthread_attr_t *__restrict, void **__restrict,
                           size_t *__restrict);
 int pthread_attr_setstack(pthread_attr_t *, void *, size_t);

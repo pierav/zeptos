@@ -10,5 +10,5 @@
 #endif
 
 #ifndef CONFIG_NOPRINTK
-#define CONFIG_NOPRINTK 1
+#define CONFIG_NOPRINTK 0
 #endif

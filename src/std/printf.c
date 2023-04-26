@@ -42,6 +42,8 @@ int vsnprintf(char *out, size_t n, const char *s, va_list vl) {
                 longarg = 0;
                 break;
             }
+            case 'i':
+            // Fall throught
             case 'd': {
                 long num = longarg ? va_arg(vl, long) : va_arg(vl, int);
                 if (num < 0) {

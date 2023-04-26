@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define MAX_THREADS CONFIG_NR_CPUS
 
@@ -32,22 +33,10 @@ struct pthread_key {
 struct pthread_spinlock {
     int _todo;
 };
-struct pthread_mutexattr {
-    int _todo;
-};
-struct pthread_condattr {
-    int _todo;
-};
 struct pthread_barrierattr {
     int _todo;
 };
 struct pthread_rwlockattr {
-    int _todo;
-};
-struct pthread_mutex {
-    int _todo;
-};
-struct pthread_cond {
     int _todo;
 };
 struct pthread_rwlock {
@@ -67,6 +56,13 @@ int pthread_attr_init(pthread_attr_t *attr) {
 
 int pthread_attr_destroy(pthread_attr_t *attr) {
     (void)attr;
+    return 0;
+}
+
+int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate) {
+    return 0;
+}
+int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) {
     return 0;
 }
 
@@ -126,3 +122,70 @@ int pthread_join(pthread_t thread, void **retval) {
     }
     return 0;
 }
+
+/**
+ *  MUTEX
+ */
+static inline int _atomic_xchg(int *v, int n) {
+    register int c;
+    __asm__ __volatile__("amoswap.w.aqrl %0, %2, %1"
+                         : "=r"(c), "+A"(v)
+                         : "r"(n));
+    return c;
+}
+
+int pthread_mutex_init(pthread_mutex_t *mutex,
+                       const pthread_mutexattr_t *attr) {
+    mutex->counter = 0;
+    return 0;
+}
+
+int pthread_mutex_lock(pthread_mutex_t *mutex) {
+    while (_atomic_xchg(&mutex->counter, 1) == 1)
+        ;
+    return 0;
+}
+
+int pthread_mutex_unlock(pthread_mutex_t *mutex) {
+    _atomic_xchg(&mutex->counter, 0);
+    return 0;
+}
+
+// int pthread_mutex_trylock(pthread_mutex_t *mutex);
+// int pthread_mutex_timedlock(pthread_mutex_t *mutex,
+//                             const struct timespec *ts);
+
+int pthread_mutex_destroy(pthread_mutex_t *mutex) { return 0; }
+
+/**
+ * COND
+ */
+
+// INVALID IMPLEMENTATION !
+
+int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr) {
+    cond->users = 0;
+    return 0;
+}
+
+int pthread_cond_destroy(pthread_cond_t *cond) {
+    // Nothing to do
+    return 0;
+}
+
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex) {
+    pthread_mutex_lock(mutex);
+    cond->users += 1;
+    pthread_mutex_unlock(mutex);
+    while (cond->users) {
+        ;
+    }
+    return 0;
+}
+
+int pthread_cond_broadcast(pthread_cond_t *cond) {
+    cond->users = 0;
+    return 0;
+}
+
+int pthread_cond_signal(pthread_cond_t *cond) { panic("Unimplemented"); }

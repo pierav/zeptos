@@ -7,6 +7,7 @@
 #include "libfdt.h"
 #include "libfdt_env.h"
 #include "printk.h"
+#include <inttypes.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -190,6 +191,7 @@ void _init(uint64_t cid, uint64_t dtb) {
     // Jump to main application
     char *argv[] = {"zeptos", "Hello World"};
     printk("launch main!\n");
+    fprintf(stdout, "HELLO WORLD @@@%s@@@\n", "ZEPTOS");
 
     int ret = main(2, argv);
 

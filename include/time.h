@@ -18,10 +18,41 @@ struct tm {
 };
 
 struct timespec {
-    time_t tv_sec; // nombre de secondes
-    long tv_nsec;  // nombre de nanosecondes
+    time_t tv_sec; /* seconds */
+    long tv_nsec;  /* nanoseconds */
 };
+
+struct timeval {
+    time_t tv_sec; /* seconds */
+    long tv_usec;  /* microseconds */
+};
+
+struct timezone {
+    int tz_minuteswest; /* minutes west of Greenwich */
+    int tz_dsttime;     /* type of DST correction */
+};
+
+typedef int clockid_t;
+
+#define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC 1
+#define CLOCK_PROCESS_CPUTIME_ID 2
+#define CLOCK_THREAD_CPUTIME_ID 3
+#define CLOCK_MONOTONIC_RAW 4
+#define CLOCK_REALTIME_COARSE 5
+#define CLOCK_MONOTONIC_COARSE 6
+#define CLOCK_BOOTTIME 7
+
+#define MAX_CLOCKS 16
+#define CLOCKS_MASK (CLOCK_REALTIME | CLOCK_MONOTONIC)
+#define CLOCKS_MONO CLOCK_MONOTONIC
 
 // TODO CLK_TCK from dts
 #define CLK_TCK 1
 #define CLOCKS_PER_SEC (CLK_TCK)
+
+int clock_gettime(clockid_t clk_id, struct timespec *tp);
+int clock_settime(clockid_t clk_id, const struct timespec *tp);
+
+time_t time(time_t *tloc);
+char *ctime(const time_t *timep);
