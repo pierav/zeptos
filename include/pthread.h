@@ -65,7 +65,7 @@ typedef struct pthread_mutexattr {
 
 /*** pthread_cond_t  ***/
 typedef struct pthread_cond {
-    uint64_t users;
+    volatile uint64_t users;
 } pthread_cond_t;
 typedef struct pthread_condattr {
     int unused;
@@ -283,3 +283,4 @@ void _pthread_cleanup_pop(struct __ptcb *, int);
     while (0)
 
 void _pthread_attach(uint64_t pid);
+int _pthread_init(size_t nr_cpus);

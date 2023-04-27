@@ -75,7 +75,7 @@ char *strdup(const char *s) {
     if (!(copy = malloc(len)))
         return (NULL);
     memcpy(copy, s, len);
-    return (copy);
+    return copy;
 }
 
 void *memchr(const void *s, int c, size_t n) {

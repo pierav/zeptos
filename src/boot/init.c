@@ -9,6 +9,7 @@
 #include "printk.h"
 #include <inttypes.h>
 #include <limits.h>
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -172,6 +173,8 @@ void _init(uint64_t cid, uint64_t dtb) {
         printk("WARN: %d > CONFIG_NR_CPUS\n", nr_cpus);
         nr_cpus = CONFIG_NR_CPUS;
     }
+    printk("Initialise pthread with %d cpus\n", nr_cpus);
+    _pthread_init(nr_cpus);
 
     // Plic initialisation
     // TODO

@@ -63,7 +63,12 @@ static void coalesce_free_list(void) {
     }
 }
 
+#include <pthread.h>
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 void *malloc(size_t size) {
+    pthread_mutex_lock(&mutex);
     void *ptr = NULL;
     alloc_node_t *blk = NULL;
 
@@ -92,11 +97,13 @@ void *malloc(size_t size) {
             list_del(&blk->node);
         }
     }
-
+    pthread_mutex_unlock(&mutex);
     return ptr;
 }
 
 void free(void *ptr) {
+    pthread_mutex_lock(&mutex);
+
     alloc_node_t *blk, *free_blk;
 
     if (ptr) {
@@ -114,6 +121,7 @@ void free(void *ptr) {
     blockadded:
         coalesce_free_list();
     }
+    pthread_mutex_unlock(&mutex);
 }
 
 void _malloc_addblock(void *addr, size_t size) {

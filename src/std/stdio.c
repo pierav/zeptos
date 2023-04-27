@@ -1,13 +1,11 @@
+#include "printk.h"
 #include <alloca.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 
-void perror(const char *s) {
-    printf("perror [%d]: ", errno);
-    puts(s);
-}
+void perror(const char *s) { printk("perror [%d]: %s\n", errno, s); }
 
 int puts(const char *s) {
     while (*s)

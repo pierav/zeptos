@@ -24,8 +24,10 @@ extern int printk_time;
 #else
 #define printk(fmt, ...)                                                       \
     do {                                                                       \
-        printf("[%8lx/%2d] " __MODULE__ "::%s: " fmt, rdcyc(), printk_time++,  \
-               __PRETTY_FUNCTION__, ##__VA_ARGS__);                            \
+        uint64_t mhartid;                                                      \
+        asm volatile("csrr %[reg], mhartid" : [reg] "=r"(mhartid));            \
+        printf("[%8lx/%2d][%2d] " __MODULE__ "::%s: " fmt, rdcyc(),            \
+               printk_time++, mhartid, __PRETTY_FUNCTION__, ##__VA_ARGS__);    \
     } while (0);
 #endif
 

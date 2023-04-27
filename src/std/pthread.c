@@ -8,6 +8,13 @@
 
 #define MAX_THREADS CONFIG_NR_CPUS
 
+static size_t _nr_cpus = 0;
+
+int _pthread_init(size_t nr_cpus) {
+    _nr_cpus = nr_cpus;
+    return 0;
+}
+
 typedef enum _thread_state {
     THREAD_IDLE = 0,
     THREAD_ALLOCATED,
@@ -70,24 +77,29 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
                    void *(*f)(void *), void *args) {
     printk("%d : %x ( %x )\n", cpt_threads, f, args);
     (void)attr;
-    if (cpt_threads >= MAX_THREADS) {
+
+    // Allocate PID in reverse order
+    uint64_t pid = _nr_cpus - cpt_threads - 1;
+    cpt_threads++; // Increase thread counter
+    if (pid >= MAX_THREADS) {
         //  A system-imposed limit on the number of threads was encountered.
         return EAGAIN;
     }
+    if (pid == 0) {
+        panic("Last PID TODO\n");
+    }
     // Allocate thread
-    _thread_entry_t *te = &_threads[cpt_threads];
-    te->pid = cpt_threads;
+    _thread_entry_t *te = &_threads[pid];
+    te->pid = pid;
     te->state = THREAD_ALLOCATED;
     te->ret = NULL; // Guard
     te->func = f;
     te->args = args;
-    *thread = cpt_threads;
+    *thread = pid;
 
     // Run thread on core[PID]
     clint_mswi_set(te->pid);
-    // TODO clint IT wakeup !
 
-    cpt_threads++;
     return 0;
 }
 
@@ -164,26 +176,31 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex) { return 0; }
 // INVALID IMPLEMENTATION !
 
 int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr) {
+    printk("%x\n", cond);
     cond->users = 0;
     return 0;
 }
 
 int pthread_cond_destroy(pthread_cond_t *cond) {
+    printk("%x\n", cond);
     // Nothing to do
     return 0;
 }
 
 int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex) {
-    pthread_mutex_lock(mutex);
+    printk("%x enter\n", cond);
+    //    pthread_mutex_lock(mutex);
     cond->users += 1;
-    pthread_mutex_unlock(mutex);
+    //    pthread_mutex_unlock(mutex);
     while (cond->users) {
         ;
     }
+    printk("%x leave\n", cond);
     return 0;
 }
 
 int pthread_cond_broadcast(pthread_cond_t *cond) {
+    printk("%x\n", cond);
     cond->users = 0;
     return 0;
 }
