@@ -75,18 +75,20 @@ int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) {
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
                    void *(*f)(void *), void *args) {
-    printk("%d : %x ( %x )\n", cpt_threads, f, args);
+    printk("%x ( %x )\n", f, args);
     (void)attr;
 
-    // Allocate PID in reverse order
-    uint64_t pid = _nr_cpus - cpt_threads - 1;
-    cpt_threads++; // Increase thread counter
-    if (pid >= MAX_THREADS) {
-        //  A system-imposed limit on the number of threads was encountered.
-        return EAGAIN;
+    // Allocate PID
+    uint64_t pid = 0;
+    for (int i = 1; i < _nr_cpus; i++) {
+        if (_threads[i].state == THREAD_IDLE) {
+            pid = i;
+            break;
+        }
     }
-    if (pid == 0) {
-        panic("Last PID TODO\n");
+    if (pid == 0) { // Cannot allocate pid/core 0 for now!
+        printk("Last PID TODO\n");
+        return EAGAIN;
     }
     // Allocate thread
     _thread_entry_t *te = &_threads[pid];
@@ -132,6 +134,8 @@ int pthread_join(pthread_t thread, void **retval) {
     if (retval) { // copies the exit status of the target thread
         (*retval) = te->ret;
     }
+    // Free thread
+    te->state = THREAD_IDLE;
     return 0;
 }
 
