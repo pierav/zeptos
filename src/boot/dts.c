@@ -191,30 +191,30 @@ int fdt_parse_mmu_type(void *fdt, int cpu_offset, const char **mmu_type) {
     return 0;
 }
 
-int fdt_parse_cpus(void *fdt, int *nr_cpus) {
+int fdt_parse_cpus(void *fdt, int *nr_cpus, const char **compatible,
+                   const char **isa, const char **mmu) {
     *nr_cpus = 0;
     int off = 0;
     do {
         off = fdt_node_offset_by_prop_value(fdt, off, "device_type", "cpu", 4);
         if (off > 0) {
-            printk("Got CPU %d @%d\n", nr_cpus, off);
-            const void *prop;
+            // printk("Got CPU %d @%d\n", nr_cpus, off);
             int len;
 
-            prop = fdt_getprop(fdt, off, "compatible", &len);
-            if (!prop || !len)
+            *compatible = fdt_getprop(fdt, off, "compatible", &len);
+            if (!*compatible || !len)
                 return -1;
-            printk("--> compatible: %s\n", (const char *)prop);
+            // printk("--> compatible: %s\n", (const char *)*compatible);
 
-            prop = fdt_getprop(fdt, off, "riscv,isa", &len);
-            if (!prop || !len)
+            *isa = fdt_getprop(fdt, off, "riscv,isa", &len);
+            if (!*isa || !len)
                 return -2;
-            printk("--> riscv,isa: %s\n", (const char *)prop);
+            // printk("--> riscv,isa: %s\n", *isa);
 
-            prop = fdt_getprop(fdt, off, "mmu-type", &len);
-            if (!prop || !len)
+            *mmu = fdt_getprop(fdt, off, "mmu-type", &len);
+            if (!*mmu || !len)
                 return -3;
-            printk("--> mmu-type: %s\n", (const char *)prop);
+            // printk("--> mmu-type: %s\n", (const char *)*mmu);
 
             *nr_cpus += 1;
         } else {

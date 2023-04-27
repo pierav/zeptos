@@ -6,3 +6,6 @@ int fdt_parse_ns16550(void *fdt, uintptr_t *ns16550_addr, uint32_t *reg_shift,
                       uint32_t *reg_io_width, const char *compatible);
 
 int fdt_parse_clint(void *fdt, uintptr_t *clint_addr, const char *compatible);
+
+int fdt_parse_cpus(void *fdt, int *nr_cpus, const char **compatible,
+                   const char **isa, const char **mmu);

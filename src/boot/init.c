@@ -129,9 +129,9 @@ void _init(uint64_t cid, uint64_t dtb) {
     // The first step is to initialise the Serial device
     uintptr_t ns16550_addr;
     uint32_t reg_shift, reg_io_width;
-    const char *compatible = "ns16550a";
+    const char *ns16550_compatible = "ns16550a";
     int res = fdt_parse_ns16550(fdt, &ns16550_addr, &reg_shift, &reg_io_width,
-                                compatible);
+                                ns16550_compatible);
     if (res == 0) {
         uart8250_init((void *)ns16550_addr, ARIANE_UART_FREQ,
                       ARIANE_UART_BAUDRATE, reg_shift, reg_io_width);
@@ -142,10 +142,9 @@ void _init(uint64_t cid, uint64_t dtb) {
 
     // Print banner
     PRINT_BANNER();
-    printk("Boot core [%d] / DTB=@%x\n", cid, fdt);
-    printk("DTB[0] = %x\n", *(uint64_t *)fdt);
-    printk("%x.uart %s driver %2x/%2x\n", ns16550_addr, compatible, reg_shift,
-           reg_io_width);
+    printk("Boot core [%d] / DTB=(0x%x)=0x%x\n", cid, fdt, *(uint64_t *)fdt);
+    printk("%x.uart %s driver %2x/%2x\n", ns16550_addr, ns16550_compatible,
+           reg_shift, reg_io_width);
 
     // Init memory
     printk("Init BSS [%x: %x]...\n", &_bss_start, &_bss_end);
@@ -161,9 +160,21 @@ void _init(uint64_t cid, uint64_t dtb) {
     // printk("fdt_off_dt_strings(p)=%d\n", fdt_off_dt_strings(fdt));
 
     // Get all CPUS
+    int nr_cpus;
+    const char *isa;
+    const char *mmu;
+    const char *compatible;
+    if (fdt_parse_cpus(fdt, &nr_cpus, &compatible, &isa, &mmu) != 0) {
+        panic("Invalid CPU found in DTS\n");
+    }
+    printk("Catch %d cpu [%s, %s, %s]\n", nr_cpus, compatible, isa, mmu);
+    if (nr_cpus > CONFIG_NR_CPUS) {
+        printk("WARN: %d > CONFIG_NR_CPUS\n", nr_cpus);
+        nr_cpus = CONFIG_NR_CPUS;
+    }
 
     // Plic initialisation
-    // Todo
+    // TODO
 
     // Clint initialisation
     uintptr_t clint_addr;
@@ -177,7 +188,7 @@ void _init(uint64_t cid, uint64_t dtb) {
            clint_compatible, 7);
     printk("%x.%s register IT %x with clint_ipi_it\n", clint_addr,
            clint_compatible, 3);
-    handle_it_arr[7] = clint_timer_it;
+    // handle_it_arr[7] = clint_timer_it;
     // handle_it_arr[3] = clint_ipi_it;
     // register IT TODO FDT id
 
