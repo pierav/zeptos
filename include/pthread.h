@@ -65,7 +65,8 @@ typedef struct pthread_mutexattr {
 
 /*** pthread_cond_t  ***/
 typedef struct pthread_cond {
-    volatile uint64_t users;
+    uint64_t users;
+    pthread_mutex_t mutex;
 } pthread_cond_t;
 typedef struct pthread_condattr {
     int unused;

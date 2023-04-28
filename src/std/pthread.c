@@ -1,6 +1,7 @@
 #include "config.h"
 #include "drivers/clint.h"
 #include "printk.h"
+#include <assert.h>
 #include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
@@ -53,8 +54,8 @@ struct pthread_barrier {
     int _todo;
 };
 
-_thread_entry_t _threads[MAX_THREADS];
-int cpt_threads = 0;
+volatile _thread_entry_t _threads[MAX_THREADS];
+pthread_mutex_t _threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int pthread_attr_init(pthread_attr_t *attr) {
     (void)attr;
@@ -75,9 +76,9 @@ int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) {
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
                    void *(*f)(void *), void *args) {
-    printk("%x ( %x )\n", f, args);
     (void)attr;
 
+    pthread_mutex_lock(&_threads_mutex);
     // Allocate PID
     uint64_t pid = 0;
     for (int i = 1; i < _nr_cpus; i++) {
@@ -90,6 +91,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
         printk("Last PID TODO\n");
         return EAGAIN;
     }
+    printk("%x ( %x ) PID=%d\n", f, args, pid);
     // Allocate thread
     _thread_entry_t *te = &_threads[pid];
     te->pid = pid;
@@ -97,6 +99,8 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
     te->ret = NULL; // Guard
     te->func = f;
     te->args = args;
+    pthread_mutex_unlock(&_threads_mutex);
+
     *thread = pid;
 
     // Run thread on core[PID]
@@ -111,9 +115,15 @@ void _pthread_attach(uint64_t pid) {
     if (te->state != THREAD_ALLOCATED) {
         panic("Thread %d is not allocated\n", pid);
     }
+    pthread_mutex_lock(&_threads_mutex);
     te->state = THREAD_ACTIVE;
+    pthread_mutex_unlock(&_threads_mutex);
+
     te->ret = te->func(te->args);
+
+    pthread_mutex_lock(&_threads_mutex);
     te->state = THREAD_FINISHED;
+    pthread_mutex_unlock(&_threads_mutex);
     return;
 }
 
@@ -125,7 +135,7 @@ int pthread_join(pthread_t thread, void **retval) {
     thread. ESRCH  No thread with the ID thread could be found.
     */
 
-    _thread_entry_t *te = &_threads[thread];
+    volatile _thread_entry_t *te = &_threads[thread];
     printk("%d\n", te->pid);
 
     while (te->state != THREAD_FINISHED) {
@@ -135,35 +145,34 @@ int pthread_join(pthread_t thread, void **retval) {
         (*retval) = te->ret;
     }
     // Free thread
+    pthread_mutex_lock(&_threads_mutex);
     te->state = THREAD_IDLE;
+    pthread_mutex_unlock(&_threads_mutex);
+    /// printk("%d leave\n", te->pid);
     return 0;
 }
 
 /**
  *  MUTEX
  */
-static inline int _atomic_xchg(int *v, int n) {
-    register int c;
-    __asm__ __volatile__("amoswap.w.aqrl %0, %2, %1"
-                         : "=r"(c), "+A"(v)
-                         : "r"(n));
-    return c;
-}
+
+#include "cmpxchg.h"
+#include "io.h"
 
 int pthread_mutex_init(pthread_mutex_t *mutex,
                        const pthread_mutexattr_t *attr) {
-    mutex->counter = 0;
+    *((volatile int *)(&mutex->counter)) = 0;
     return 0;
 }
 
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
-    while (_atomic_xchg(&mutex->counter, 1) == 1)
+    while (arch_xchg_acquire((volatile int *)&mutex->counter, 1) == 1)
         ;
     return 0;
 }
 
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
-    _atomic_xchg(&mutex->counter, 0);
+    arch_xchg_release((volatile int *)&mutex->counter, 0);
     return 0;
 }
 
@@ -193,19 +202,26 @@ int pthread_cond_destroy(pthread_cond_t *cond) {
 
 int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex) {
     printk("%x enter\n", cond);
-    //    pthread_mutex_lock(mutex);
+    pthread_mutex_lock(&cond->mutex);
     cond->users += 1;
-    //    pthread_mutex_unlock(mutex);
-    while (cond->users) {
+    pthread_mutex_unlock(&cond->mutex);
+
+    pthread_mutex_unlock(mutex);
+
+    while (readq_relaxed(&cond->users)) {
         ;
     }
+
+    // pthread_mutex_lock(mutex);
     printk("%x leave\n", cond);
     return 0;
 }
 
 int pthread_cond_broadcast(pthread_cond_t *cond) {
-    printk("%x\n", cond);
+
+    pthread_mutex_lock(&cond->mutex);
     cond->users = 0;
+    pthread_mutex_unlock(&cond->mutex);
     return 0;
 }
 

@@ -1,3 +1,7 @@
+###
+# Build
+###
+
 incdir 		= $(shell find src -type d) include
 INCS 		= $(foreach dir, ${incdir}, -I$(dir))
 
@@ -11,8 +15,6 @@ OBJ 		:= $(subst src/,build/,$(SRC_C:.c=.o)) \
 
 LIB 		= build/libzeptos.a
 EXEC 		= build/libzeptos
-
-SIM 		:= spike --isa=rv$(XLEN)gc
 
 all: $(EXEC) $(LIB)
 
@@ -36,3 +38,22 @@ $(EXEC): $(LIB) build/boot/main.o
 
 clean:
 	rm -r build
+
+.phony: run run_spike run_qemu
+
+###
+# Run
+###
+
+NR_CPUS = 8 
+
+run: run_spike
+
+run_spike: $(EXEC)
+	spike --isa=rv$(XLEN)gc -p$(NR_CPUS) $^
+
+run_qemu: $(EXEC)
+	qemu-system-riscv$(XLEN) -nographic -machine virt -m 1g -smp 5 -bios $^
+
+run_gdb: $(EXEC)
+	echo "TODO"

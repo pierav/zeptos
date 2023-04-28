@@ -35,8 +35,8 @@ static void *thread_start(void *arg) {
     struct thread_info *tinfo = arg;
     char *uargv, *p;
 
-    printf("Thread %d: top of stack near %p; argv_string=%s\n",
-           tinfo->thread_num, &p, tinfo->argv_string);
+    // printf("Thread %d: top of stack near %p; argv_string=%s\n",
+    //        tinfo->thread_num, &p, tinfo->argv_string);
 
     uargv = strdup(tinfo->argv_string);
     if (uargv == NULL)
@@ -44,6 +44,9 @@ static void *thread_start(void *arg) {
 
     for (p = uargv; *p != '\0'; p++)
         *p = toupper(*p);
+
+    printf("Thread %d: TOS~=%p; malloc[@%x] argv_string=%s->%s\n",
+           tinfo->thread_num, &p, uargv, tinfo->argv_string, uargv);
 
     return uargv;
 }
@@ -55,11 +58,10 @@ int main(int argc, char *argv[]) {
     struct thread_info *tinfo;
     pthread_attr_t attr;
     int stack_size;
-    void *res;
 
     stack_size = -1;
     num_threads = 4;
-    char *tnames[] = {"Thread0", "Victim", "Hello World", "Teddy"};
+    char *tnames[] = {"11aaaaa11", "22bbbbb22", "33ccccc33", "44ddddd44"};
     /* Initialize thread creation attributes */
 
     s = pthread_attr_init(&attr);
@@ -100,17 +102,20 @@ int main(int argc, char *argv[]) {
         handle_error_en(s, "pthread_attr_destroy");
 
     /* Now join with each thread, and display its returned value */
-
+    void *res[4];
     for (tnum = 0; tnum < num_threads; tnum++) {
-        s = pthread_join(tinfo[tnum].thread_id, &res);
+        s = pthread_join(tinfo[tnum].thread_id, &res[tnum]);
         if (s != 0)
             handle_error_en(s, "pthread_join");
-
-        printf("Joined with thread %d; returned value was %s\n",
-               tinfo[tnum].thread_num, (char *)res);
-        free(res); /* Free memory allocated by thread */
     }
 
+    for (tnum = 0; tnum < num_threads; tnum++) {
+        printf("Joined with thread %d; returned value was %s @%x\n",
+               tinfo[tnum].thread_num, (char *)res[tnum], res[tnum]);
+    }
+    for (tnum = 0; tnum < num_threads; tnum++) {
+        free(res[tnum]); /* Free memory allocated by thread */
+    }
     free(tinfo);
-    exit(EXIT_SUCCESS);
+    // exit(EXIT_SUCCESS);
 }

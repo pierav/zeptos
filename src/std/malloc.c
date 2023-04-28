@@ -22,11 +22,13 @@
  * THE SOFTWARE.
  */
 
+#include "list.h"
+#include "printk.h"
+#include <assert.h>
+#include <pthread.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
-#include "list.h"
 
 /* align to nearest power of two */
 #define ALIGN_SIZE(sz, align) (((sz) + ((align)-1)) & ~((align)-1))
@@ -45,7 +47,7 @@ typedef struct alloc_node {
 #define MIN_ALLOC_SZ ALLOC_HEADER_SZ + 32
 
 /* free list */
-static LIST_HEAD(free_list);
+LIST_HEAD(free_list);
 
 static void coalesce_free_list(void) {
     alloc_node_t *b, *lb = NULL, *t;
@@ -63,12 +65,7 @@ static void coalesce_free_list(void) {
     }
 }
 
-#include <pthread.h>
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-void *malloc(size_t size) {
-    pthread_mutex_lock(&mutex);
+void *malloc_unsafe(size_t size) {
     void *ptr = NULL;
     alloc_node_t *blk = NULL;
 
@@ -97,13 +94,10 @@ void *malloc(size_t size) {
             list_del(&blk->node);
         }
     }
-    pthread_mutex_unlock(&mutex);
     return ptr;
 }
 
-void free(void *ptr) {
-    pthread_mutex_lock(&mutex);
-
+void free_unsafe(void *ptr) {
     alloc_node_t *blk, *free_blk;
 
     if (ptr) {
@@ -121,7 +115,6 @@ void free(void *ptr) {
     blockadded:
         coalesce_free_list();
     }
-    pthread_mutex_unlock(&mutex);
 }
 
 void _malloc_addblock(void *addr, size_t size) {
@@ -153,4 +146,38 @@ void *realloc(void *ptr, size_t size) {
     }
 
     return new_data;
+}
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+volatile int cpt = 0;
+
+void *malloc(size_t size) {
+    pthread_mutex_lock(&mutex);
+    // printk(" enter #%d\n", size);
+    assert(cpt == 0);
+    cpt = cpt + 1;
+
+    void *ptr = malloc_unsafe(size);
+
+    assert(cpt == 1);
+    cpt = cpt - 1;
+    // printk("%x leave \n", ptr);
+    pthread_mutex_unlock(&mutex);
+
+    return ptr;
+}
+
+void free(void *ptr) {
+    pthread_mutex_lock(&mutex);
+    // printk("%x enter\n", ptr);
+    assert(cpt == 0);
+    cpt = cpt + 1;
+
+    // PR TODO: Bugged ...
+    // free_unsafe(ptr);
+
+    assert(cpt == 1);
+    cpt = cpt - 1;
+    // printk("%x leave\n", ptr);
+    pthread_mutex_unlock(&mutex);
 }

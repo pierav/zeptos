@@ -111,6 +111,7 @@ void _trap(int i) {
 }
 
 void _init(uint64_t cid, uint64_t dtb) {
+    int tos;
     // Only core 0 boots
     if (cid != 0) {
         uint32_t mie = MIP_MSIP; // Only enable Soft INT
@@ -148,10 +149,12 @@ void _init(uint64_t cid, uint64_t dtb) {
            reg_shift, reg_io_width);
 
     // Init memory
+    printk("TOS = %x\n", &tos);
     printk("Init BSS [%x: %x]...\n", &_bss_start, &_bss_end);
     // memset(&_bss_start, 0, &_bss_end - &_bss_start);
     printk("Setup dyn memory...\n");
-    _malloc_addblock(&_end, 128 * 1024); // Lest add 128 kB
+    // TODO Dts &_end + stacks...
+    _malloc_addblock((void *)0x88000000, 16 * 128 * 1024); // Lest add 128 kB
 
     // Parse DTS
     // printk("fdt_version(p)=%d\n", fdt_version(fdt));
@@ -205,9 +208,12 @@ void _init(uint64_t cid, uint64_t dtb) {
     // Jump to main application
     char *argv[] = {"zeptos", "Hello World"};
     printk("launch main!\n");
-    fprintf(stdout, "HELLO WORLD @@@%s@@@\n", "ZEPTOS");
 
-    int ret = main(2, argv);
+    int ret;
+    // for(int i = 0; i < 50; i++){
+    fprintf(stdout, "HELLO WORLD @@@%s@@@\n", "ZEPTOS");
+    ret = main(2, argv);
+    //}
 
     printk("Shutdown...\n");
 

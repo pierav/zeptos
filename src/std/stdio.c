@@ -17,14 +17,17 @@ int puts(const char *s) {
 #include "lock.h"
 static atomic_t printf_lock = {.counter = 0};
 
+#include <pthread.h>
+pthread_mutex_t _print_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int printf(const char *s, ...) {
-    get_lock(&printf_lock);
+    pthread_mutex_lock(&_print_mutex);
     int res = 0;
     va_list vl;
     va_start(vl, s);
     res = vprintf(s, vl);
     va_end(vl);
-    put_lock(&printf_lock);
+    pthread_mutex_unlock(&_print_mutex);
     return res;
 }
 
