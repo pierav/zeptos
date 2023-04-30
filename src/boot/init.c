@@ -129,10 +129,15 @@ void _init(uint64_t cid, uint64_t dtb) {
         exit(1);
     }
 
+    #ifdef CONFIG_DTS_STATIC
+    uint64_t _fdt = 0xCafeCafe;
+    void *fdt = &_fdt;
+    #else
     // Copy FDT in memory for faster $ access
     size_t fdt_size = fdt_totalsize((void *)dtb);
     char fdt[fdt_size]; // Allocate FDT on stack
     memcpy(fdt, (void *)dtb, fdt_size);
+    #endif
 
     // The first step is to initialise the Serial device
     uintptr_t ns16550_addr;
