@@ -35,22 +35,22 @@ static uint32_t get_reg(uint32_t num) {
     uint32_t offset = num << uart8250_reg_shift;
 
     if (uart8250_reg_width == 1)
-        return readb(uart8250_base + offset);
+        return readb_relaxed(uart8250_base + offset);
     else if (uart8250_reg_width == 2)
-        return readw(uart8250_base + offset);
+        return readw_relaxed(uart8250_base + offset);
     else
-        return readl(uart8250_base + offset);
+        return readl_relaxed(uart8250_base + offset);
 }
 
 static void set_reg(uint32_t num, uint32_t val) {
     uint32_t offset = num << uart8250_reg_shift;
 
     if (uart8250_reg_width == 1)
-        writeb(val, uart8250_base + offset);
+        writeb_relaxed(val, uart8250_base + offset);
     else if (uart8250_reg_width == 2)
-        writew(val, uart8250_base + offset);
+        writew_relaxed(val, uart8250_base + offset);
     else
-        writel(val, uart8250_base + offset);
+        writel_relaxed(val, uart8250_base + offset);
 }
 
 int uart8250_putc(int ch) {
