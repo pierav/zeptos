@@ -18,11 +18,11 @@ include include.mk
 SRC_C 		:= $(shell find ./src -type f -name '*.c')
 SRC_S 		:= $(shell find ./src -type f -name '*.S')
 
-OBJ 		:= $(subst src/,build/,$(SRC_C:.c=.o)) \
-			   $(subst src/,build/,$(SRC_S:.S=.o))
+OBJ 		:= $(subst src/,build/,$(SRC_C:.c=_$(MODEL).o)) \
+			   $(subst src/,build/,$(SRC_S:.S=_$(MODEL).o))
 
-LIB 		= build/libzeptos.a
-EXEC 		= build/libzeptos
+LIB 		= build/libzeptos_$(MODEL).a
+EXEC 		= build/libzeptos_$(MODEL)
 
 # Default rule
 all: $(EXEC) $(LIB)
@@ -46,18 +46,22 @@ $(KCONFIG_CONFIG):
 menuconfig:
 	menuconfig
 
-genconfig: $(KCONFIG_CONFIG)
+genconfig: $(CONFIG_HEADER)
+
+$(CONFIG_HEADER): $(KCONFIG_CONFIG) force
 	genconfig --header-path $(CONFIG_HEADER)
+
+.phony: menuconfig genconfig
 
 ###	
 # Build
 ###
 
-build/%.o: src/%.c
+build/%_$(MODEL).o: src/%.c $(CONFIG_HEADER)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -D__MODULE__=\"$(notdir $(basename $<))\" -o $@ -c $<
 
-build/%.o: src/%.S
+build/%_$(MODEL).o: src/%.S
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
@@ -65,7 +69,7 @@ $(LIB): $(OBJ)
 	ar rc $@ $+
 	ranlib $@
 
-$(EXEC): $(LIB) build/boot/main.o
+$(EXEC): $(LIB) build/boot/main_$(MODEL).o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 
@@ -92,3 +96,10 @@ run_qemu: $(EXEC)
 
 run_gdb: $(EXEC)
 	echo "TODO"
+
+###
+# Misc
+###
+
+force:
+	@:

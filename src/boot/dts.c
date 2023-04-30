@@ -1,3 +1,5 @@
+
+
 #include "dts.h"
 #include "fdt.h"
 #include "libfdt.h"
@@ -77,6 +79,9 @@ int fdt_get_next_subnode(void *fdt, int node) {
 }
 
 int fdt_parse_clint(void *fdt, uintptr_t *clint_addr, const char *compatible) {
+#ifdef CONFIG_DTS_STATIC
+    *clint_addr = CONFIG_DTS_CLINT_ADDR;
+#else
     int nodeoffset, rc;
 
     nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compatible);
@@ -86,7 +91,7 @@ int fdt_parse_clint(void *fdt, uintptr_t *clint_addr, const char *compatible) {
     rc = fdt_get_node_addr_size(fdt, nodeoffset, clint_addr, NULL, "reg");
     if (rc < 0 || !clint_addr)
         return -1;
-
+#endif
     return 0;
 }
 
@@ -113,6 +118,12 @@ int fdt_parse_plic(void *fdt, uintptr_t *plic_addr, uint32_t *ndev,
 
 int fdt_parse_ns16550(void *fdt, uintptr_t *ns16550_addr, uint32_t *reg_shift,
                       uint32_t *reg_io_width, const char *compatible) {
+
+#ifdef CONFIG_DTS_STATIC
+    *ns16550_addr = CONFIG_DTS_NS16550_ADDR;
+    *reg_shift = CONFIG_DTS_NS16550_REG_SHIFT;
+    *reg_io_width = CONFIG_DTS_NS16550_REG_WIDTH;
+#else
     int nodeoffset, len, rc;
     const fdt32_t *reg_p;
 
@@ -141,7 +152,7 @@ int fdt_parse_ns16550(void *fdt, uintptr_t *ns16550_addr, uint32_t *reg_shift,
             *reg_io_width = 1;
         }
     }
-
+#endif
     return 0;
 }
 
@@ -193,6 +204,13 @@ int fdt_parse_mmu_type(void *fdt, int cpu_offset, const char **mmu_type) {
 
 int fdt_parse_cpus(void *fdt, int *nr_cpus, const char **compatible,
                    const char **isa, const char **mmu) {
+
+#ifdef CONFIG_DTS_STATIC
+    *nr_cpus = CONFIG_NR_CPUS; // Best fit
+    *compatible = CONFIG_DTS_CPUS_COMPATIBLE;
+    *isa = CONFIG_DTS_CPUS_ISA;
+    *mmu = CONFIG_DTS_CPUS_MMU;
+#else
     *nr_cpus = 0;
     int off = 0;
     do {
@@ -221,5 +239,6 @@ int fdt_parse_cpus(void *fdt, int *nr_cpus, const char **compatible,
             break;
         }
     } while (off);
+#endif
     return 0;
 }
