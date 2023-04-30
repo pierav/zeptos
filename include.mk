@@ -18,7 +18,6 @@ CFLAGS 		= -DPREALLOCATE=1 -mcmodel=medany \
 			  -fno-common -fno-builtin-printf -fno-builtin \
 			  -march=rv64imafdc -mabi=lp64d \
 			  -fno-tree-loop-distribute-patterns \
-			  -DCONFIG_ZEPTOS_BANNER_EXTRA=v0.0.0 \
 			  $(INCS)
 
 LDFLAGS 	= $(INCS) -static \

@@ -16,7 +16,7 @@ static inline uint32_t rdcyc() {
 
 extern int printk_time;
 
-#if CONFIG_NOPRINTK
+#ifdef CONFIG_NOPRINTK
 #define printk(fmt, ...)                                                       \
     do {                                                                       \
         ;                                                                      \

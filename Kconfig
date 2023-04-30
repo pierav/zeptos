@@ -1,0 +1,62 @@
+
+mainmenu "ZeptOS Configuration"
+
+menu "Genreal"
+
+config NR_CPUS
+    int "Maximum number of CPUs"
+    default 16
+
+# TODO
+config ZEPTOS_BANNER_EXTRA
+    string "Local version - append to kernel release"
+    default "v0.0.0"
+
+config NOPRINTK
+    bool "Disable printk display"
+    default false
+
+endmenu
+
+menu "Platform DTS"
+
+config DTS_STATIC
+    bool "Do DTS parsing at compile time"
+    default false
+
+config DTS_NS16550_ADDR 
+    hex "DTS_NS16550_ADDR"
+    default 0x10000000
+    depends on DTS_STATIC
+
+config DTS_NS16550_REG_SHIFT
+    int "DTS_NS16550_REG_SHIFT"
+    default 2
+    depends on DTS_STATIC
+
+config DTS_NS16550_REG_WIDTH
+    int "DTS_NS16550_REG_WIDTH"
+    default 4
+    depends on DTS_STATIC
+
+config DTS_CLINT_ADDR
+    hex "DTS_CLINT_ADDR"
+    default 0x0b000000
+    depends on DTS_STATIC
+
+config DTS_CPUS_COMPATIBLE
+    string "DTS_CPUS_COMPATIBLE"
+    default "riscv"
+    depends on DTS_STATIC
+
+config DTS_CPUS_ISA
+    string "DTS_CPUS_ISA"
+    default "rv64imafdc"
+    depends on DTS_STATIC
+
+config DTS_CPUS_MMU
+    string "DTS_CPUS_MMU"
+    default "riscv,sv39"
+    depends on DTS_STATIC
+
+endmenu

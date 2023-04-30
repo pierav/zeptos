@@ -1,0 +1,2 @@
+#define CONFIG_NR_CPUS 16
+#define CONFIG_ZEPTOS_BANNER_EXTRA "v0.0.0"

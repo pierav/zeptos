@@ -60,8 +60,8 @@ int main(int argc, char *argv[]) {
     int stack_size;
 
     stack_size = -1;
-    num_threads = 4;
-    char *tnames[] = {"11aaaaa11", "22bbbbb22", "33ccccc33", "44ddddd44"};
+    num_threads = 3;
+    char *tnames[] = {"11aaaaa11", "22bbbbb22", "33ccccc33"};
     /* Initialize thread creation attributes */
 
     s = pthread_attr_init(&attr);

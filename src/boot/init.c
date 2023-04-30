@@ -86,15 +86,16 @@ int __attribute__((weak)) main(int argc, char **argv) {
     return -1;
 }
 
-// 50 MHz 
-// uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
+// 50 MHz
+// uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx),
+// .rx_en(1'b1));
 #define ARIANE_UART_ADDR 0x10000000
 #define ARIANE_UART_FREQ 50000000
 #define ARIANE_UART_BAUDRATE 115200
 #define ARIANE_UART_REG_SHIFT 2
 #define ARIANE_UART_REG_WIDTH 4
 
-#define CLINT_INTERRUPT_PERIOD 1200000
+#define CLINT_INTERRUPT_PERIOD 1200000000
 
 void park() {
     while (1)
@@ -123,11 +124,15 @@ void _init(uint64_t cid, uint64_t dtb) {
     }
 
     // Check if dtb is valid
-    void *fdt = (void *)dtb;
-    if (fdt_magic(fdt) != FDT_MAGIC) {
+    if (fdt_magic((void *)dtb) != FDT_MAGIC) {
         // TODO: post console printk("Invalid FDT");
         exit(1);
     }
+
+    // Copy FDT in memory for faster $ access
+    size_t fdt_size = fdt_totalsize((void *)dtb);
+    char fdt[fdt_size]; // Allocate FDT on stack
+    memcpy(fdt, (void *)dtb, fdt_size);
 
     // The first step is to initialise the Serial device
     uintptr_t ns16550_addr;
