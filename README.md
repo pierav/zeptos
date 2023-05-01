@@ -66,6 +66,12 @@ spike -p8 ./build/libzeptos
 
 # On hold
 
+* printk buffer
+* more pthread support
+* memory from dtb
+* free() bugged
+* qemu poweroff
+
 # Deps
 
 https://pypi.org/project/kconfiglib/
