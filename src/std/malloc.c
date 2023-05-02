@@ -181,3 +181,13 @@ void free(void *ptr) {
     // printk("%x leave\n", ptr);
     pthread_mutex_unlock(&mutex);
 }
+
+void *calloc(size_t nmemb, size_t size) {
+    size_t n = nmemb * size;
+    void *ret = malloc(n);
+    if (!ret) {
+        return NULL;
+    }
+    memset(ret, 0, n);
+    return ret;
+}

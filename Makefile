@@ -2,10 +2,6 @@
 # Setup
 ###
 
-# * Generic
-# 	- Plateform independant
-MODEL = generic
-
 ###
 # Files
 ###
@@ -13,6 +9,7 @@ MODEL = generic
 incdir 		= $(shell find src -type d) include config
 INCS 		= $(foreach dir, ${incdir}, -I$(dir))
 
+export ZETPOS_PATH=$(CURDIR)
 include include.mk
 
 SRC_C 		:= $(shell find ./src -type f -name '*.c')
@@ -56,6 +53,9 @@ $(CONFIG_HEADER): $(KCONFIG_CONFIG) force
 ###	
 # Build
 ###
+
+CFLAGS 		= $(ZEPTOS_CFLAGS)
+LDFLAGS 	= $(ZEPTOS_LDFLAGS)
 
 build/%_$(MODEL).o: src/%.c $(CONFIG_HEADER)
 	@mkdir -p $(@D)

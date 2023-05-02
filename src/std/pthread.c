@@ -57,22 +57,15 @@ struct pthread_barrier {
 volatile _thread_entry_t _threads[MAX_THREADS];
 pthread_mutex_t _threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int pthread_attr_init(pthread_attr_t *attr) {
-    (void)attr;
-    return 0;
-}
-
-int pthread_attr_destroy(pthread_attr_t *attr) {
-    (void)attr;
-    return 0;
-}
-
+int pthread_attr_init(pthread_attr_t *attr) { return 0; }
+int pthread_attr_destroy(pthread_attr_t *attr) { return 0; }
 int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate) {
     return 0;
 }
 int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) {
     return 0;
 }
+int pthread_attr_setstacksize(pthread_attr_t *attr, size_t size) { return 0; }
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
                    void *(*f)(void *), void *args) {

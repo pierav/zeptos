@@ -12,6 +12,8 @@ __attribute__((noreturn)) void abort(void);
 __attribute__((noreturn)) void exit(int status);
 void *malloc(size_t size);
 void *realloc(void *ptr, size_t size);
+void *calloc(size_t nmemb, size_t size);
+
 void free(void *ptr);
 void _malloc_addblock(void *addr, size_t size);
 

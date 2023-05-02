@@ -52,8 +52,8 @@ const char *DISPLAY_MCAUSE[] = {[0] = "MISALIGNED_FETCH",
 #define NB_EXCEPT 16
 #define NB_IT 64
 
-void (*handle_it_arr[NB_IT])(uintptr_t, uintptr_t) = {
-    [3] = clint_ipi_it, [7] = clint_timer_it};
+void (*handle_it_arr[NB_IT])(uintptr_t, uintptr_t) = {[3] = clint_ipi_it,
+                                                      [7] = clint_timer_it};
 
 void (*handle_except_arr[NB_EXCEPT])(uintptr_t, uintptr_t) = {NULL};
 
@@ -78,6 +78,9 @@ uintptr_t handle_trap(uintptr_t cause, uintptr_t epc, uintptr_t regs[32]) {
     (void)regs;
     return epc;
 }
+
+__attribute__((weak)) char *_argv[] = {"zeptos", "hello world"};
+__attribute__((weak)) int _argc = 2;
 
 int __attribute__((weak)) main(int argc, char **argv) {
     if (argc == 2) {
@@ -219,14 +222,18 @@ void _init(uint64_t cid, uint64_t dtb) {
     asm volatile("csrsi mstatus, 8"); // MSTATUS_MIE
 
     // Jump to main application
-    char *argv[] = {"zeptos", "Hello World"};
     printk("launch main!\n");
 
+    // parse main application args
+    char **argv;
+    fprintf(stdout, "zeptos # ");
+    for (int i = 0; i < _argc; i++) {
+        fprintf(stdout, "%s ", _argv[i]);
+    }
+    fprintf(stdout, "\n");
+
     int ret;
-    // for(int i = 0; i < 50; i++){
-    fprintf(stdout, "HELLO WORLD @@@%s@@@\n", "ZEPTOS");
-    ret = main(2, argv);
-    //}
+    ret = main(_argc, _argv);
 
     printk("Shutdown...\n");
 
