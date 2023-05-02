@@ -66,11 +66,23 @@ spike -p8 ./build/libzeptos
 
 # On hold
 
-* printk buffer
+## +++
+
+* Log level
 * more pthread support
-* memory from dtb
 * free() bugged
-* qemu poweroff
+
+## +/-
+
+* memory from dtb
+* fdt parsing for poweroff
+* printk buffer
+
+## ---
+
+* printf %d reversed
+* printf %[NUMBER]x
+* Versions automation
 
 # Deps
 
