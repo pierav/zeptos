@@ -7,6 +7,7 @@
 #include "libfdt.h"
 #include "libfdt_env.h"
 #include "printk.h"
+#include <byteswap.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <pthread.h>
@@ -51,8 +52,8 @@ const char *DISPLAY_MCAUSE[] = {[0] = "MISALIGNED_FETCH",
 #define NB_EXCEPT 16
 #define NB_IT 64
 
-void (*handle_it_arr[NB_IT])(uintptr_t, uintptr_t) = {[3] = clint_ipi_it,
-                                                      [7] = clint_timer_it};
+void (*handle_it_arr[NB_IT])(uintptr_t, uintptr_t) = {
+    [3] = clint_ipi_it, [7] = clint_timer_it};
 
 void (*handle_except_arr[NB_EXCEPT])(uintptr_t, uintptr_t) = {NULL};
 
@@ -155,7 +156,8 @@ void _init(uint64_t cid, uint64_t dtb) {
 
     // Print banner
     PRINT_BANNER();
-    printk("Boot core [%d] / DTB=(0x%x)=0x%x\n", cid, fdt, *(uint64_t *)fdt);
+    printk("Boot core [%d] / DTB=(0x%x)=0x%x\n", cid, fdt,
+           bswap_32(*(uint32_t *)fdt));
     printk("%x.uart %s driver %2x/%2x\n", ns16550_addr, ns16550_compatible,
            reg_shift, reg_io_width);
 
