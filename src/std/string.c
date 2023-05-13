@@ -58,17 +58,6 @@ int strncmp(const char *s1, const char *s2, size_t n) {
     return *s1 - *s2;
 }
 
-char *strncpy(char *dst, const char *src, size_t n) {
-    size_t i;
-    for (i = 0; i < n && src[i]; i++) {
-        dst[i] = src[i];
-    }
-    for (; i < n; i++) {
-        dst[i] = 0;
-    }
-    return dst;
-}
-
 char *strdup(const char *s) {
     char *copy;
     size_t len = strlen(s) + 1;
@@ -140,4 +129,43 @@ void *memset(void *dest, int c, size_t n) {
 char *strerror(int errnum) {
     (void)errnum;
     return "*strerror*";
+}
+
+char *strncat(char *dest, const char *src, size_t n) {
+    size_t dest_len = strlen(dest);
+    size_t i;
+
+    for (i = 0; i < n && src[i] != '\0'; i++)
+        dest[dest_len + i] = src[i];
+    dest[dest_len + i] = '\0';
+
+    return dest;
+}
+
+char *strcat(char *dest, const char *src) {
+    size_t dest_len = strlen(dest);
+    size_t i;
+
+    for (i = 0; src[i] != '\0'; i++)
+        dest[dest_len + i] = src[i];
+    dest[dest_len + i] = '\0';
+    return dest;
+}
+
+char *strncpy(char *dest, const char *src, size_t n) {
+    size_t i;
+    for (i = 0; i < n && src[i] != '\0'; i++)
+        dest[i] = src[i];
+    for (; i < n; i++)
+        dest[i] = '\0';
+
+    return dest;
+}
+
+char *strcpy(char *dest, const char *src) {
+    size_t i;
+    for (i = 0; src[i] != '\0'; i++)
+        dest[i] = src[i];
+    dest[i] = '\0';
+    return dest;
 }

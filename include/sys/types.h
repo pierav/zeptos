@@ -4,7 +4,7 @@
 
 typedef int __unimplemented_t;
 
-typedef __unimplemented_t blkcnt_t; 
+typedef __unimplemented_t blkcnt_t;
 // Used for file block counts.
 
 typedef __unimplemented_t blksize_t;
@@ -25,14 +25,12 @@ typedef __unimplemented_t fsblkcnt_t;
 typedef __unimplemented_t fsfilcnt_t;
 // Used for file system file counts
 
-
-typedef __unimplemented_t gid_t; 
+typedef __unimplemented_t gid_t;
 //  Used for group IDs.
 
-typedef __unimplemented_t id_t; 
+typedef __unimplemented_t id_t;
 // Used  as  a  general identifier; can be used to contain
 // at least a pid_t, uid_t, or gid_t.
-
 
 typedef __unimplemented_t ino_t;
 // Used for file serial numbers.
@@ -70,6 +68,8 @@ typedef struct pthread_key pthread_key_t;
 // size_t
 // ssize_t
 // suseconds_t
+// ?
+typedef __SIZE_TYPE__ ssize_t;
 
 typedef long long time_t;
 // time_t Used for time in seconds. Seconds since the Epoch.
@@ -79,15 +79,16 @@ typedef long long time_t;
 // trace_event_id_t
 // trace_event_set_t
 // trace_id_t
-// uid_t
+
+typedef intmax_t uid_t;
 // useconds_t
-     
 
 // Additionally:
 // * mode_t shall be an integer type.
 // * nlink_t, uid_t, gid_t, and id_t shall be integer types.
 // * blkcnt_t and off_t shall be signed integer types.
-// * fsblkcnt_t, fsfilcnt_t,   and ino_t shall be defined as unsigned integer types.
+// * fsblkcnt_t, fsfilcnt_t,   and ino_t shall be defined as unsigned integer
+// types.
 // * size_t shall be an unsigned integer type.
 // * blksize_t, pid_t, and ssize_t shall be signed integer types.
 // * time_t and clock_t shall be integer or real-floating types.

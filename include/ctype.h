@@ -26,7 +26,11 @@ extern const unsigned char _ctype[];
 #define isascii(c) (((unsigned char)(c)) <= 0x7f)
 #define toascii(c) (((unsigned char)(c)) & 0x7f)
 
-#define _isdigit(c) (0 <= (c) && (c) <= '9')
+//#define isdigit(c) (0 <= (c) && (c) <= '9')
+
+static inline unsigned char isdigit(unsigned char c) {
+    return '0' <= (c) && (c) <= '9';
+}
 
 static inline unsigned char tolower(unsigned char c) {
     if (isupper(c))

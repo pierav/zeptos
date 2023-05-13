@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#if OLD
+
 #define WRITEC(c)                                                              \
     do {                                                                       \
         if (out && pos < n) {                                                  \
@@ -100,3 +102,5 @@ int vsnprintf(char *out, size_t n, const char *s, va_list vl) {
     }
     return pos;
 }
+
+#endif

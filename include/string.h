@@ -14,8 +14,12 @@ char *strrchr(register const char *s, int c);
 int strcmp(const char *, const char *);
 size_t strlen(const char *);
 int strncmp(const char *, const char *, size_t);
-char *strncpy(char *, const char *, size_t);
 size_t strnlen(const char *s, size_t maxlen);
 char *strdup(const char *s);
+
+char *strcat(char *dest, const char *src);
+char *strncat(char *dest, const char *src, size_t n);
+char *strcpy(char *dest, const char *src);
+char *strncpy(char *dest, const char *src, size_t n);
 
 char *strerror(int errnum);

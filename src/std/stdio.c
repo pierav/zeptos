@@ -14,40 +14,48 @@ int puts(const char *s) {
     return 0;
 }
 
-#include "lock.h"
-static atomic_t printf_lock = {.counter = 0};
-
 #include <pthread.h>
 pthread_mutex_t _print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int printf(const char *s, ...) {
+int printf(const char *format, ...) {
     pthread_mutex_lock(&_print_mutex);
-    int res = 0;
     va_list vl;
-    va_start(vl, s);
-    res = vprintf(s, vl);
+    va_start(vl, format);
+    int res = vprintf(format, vl);
     va_end(vl);
     pthread_mutex_unlock(&_print_mutex);
     return res;
 }
 
-int snprintf(char *out, size_t n, const char *s, ...) {
-    va_list vl;
-    va_start(vl, s);
-    int res = vsnprintf(out, n, s, vl);
-    va_end(vl);
-    return res;
-}
+// int sprintf(char *str, const char *format, ...){
+//     va_list vl;
+//     va_start(vl, format);
+//     int res = vsprintf(str, format, vl);
+//     va_end(vl);
+//     return res;
+// }
+
+// int snprintf(char *out, size_t n, const char *format, ...) {
+//     va_list vl;
+//     va_start(vl, format);
+//     int res = vsnprintf(out, n, format, vl);
+//     va_end(vl);
+//     return res;
+// }
 
 int vprintf(const char *s, va_list vl) {
     char *out;
-    int res = vsnprintf(NULL, -1, s, vl);
+    int res = vsnprintf(NULL, 0, s, vl);
     out = alloca(res + 1);
     vsnprintf(out, res + 1, s, vl);
     while (*out)
         putchar(*out++);
     return res;
 }
+
+// int vsprintf(char *str, const char *format, va_list ap){
+//     return vsnprintf(str, -1, format, ap);
+// }
 
 // Fake filesystem
 

@@ -29,6 +29,7 @@ ZEPTOS_CFLAGS 	= -DPREALLOCATE=1 -mcmodel=medany \
 			  	  $(INCS)
 
 ZEPTOS_LDFLAGS 	= $(INCS) -static \
-			  -nostdlib -nostartfiles \
+			 -nostartfiles -nodefaultlibs \
 			  -lm -T $(ZETPOS_PATH)/src/boot/link.ld
 
+# 

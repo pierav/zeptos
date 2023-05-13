@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-
 struct tm {
     int tm_sec;     /* seconds after the minute [0-60] */
     int tm_min;     /* minutes after the hour [0-59] */

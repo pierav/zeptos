@@ -75,8 +75,6 @@ double sqrt(double x);
 double tan(double x);
 double tanh(double x);
 
-double atof(const char *str);
-
 int isinf(double x);
 int isnan(double x);
 int isfinite(double x);

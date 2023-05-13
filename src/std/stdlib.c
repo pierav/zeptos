@@ -123,7 +123,7 @@ unsigned long strtoul(const char *nptr, char **endptr, register int base) {
     cutoff = (unsigned long)ULONG_MAX / (unsigned long)base;
     cutlim = (unsigned long)ULONG_MAX % (unsigned long)base;
     for (acc = 0, any = 0;; c = *s++) {
-        if (_isdigit(c))
+        if (isdigit(c))
             c -= '0';
         else if (isalpha(c))
             c -= isupper(c) ? 'A' - 10 : 'a' - 10;
@@ -163,3 +163,49 @@ float strtof(const char *str, char **endptr) {
 long double strtold(const char *str, char **endptr) {
     return strtod(str, endptr);
 }
+
+double atof(const char *s) {
+    double a = 0.0;
+    int e = 0;
+    int c;
+    while ((c = *s++) != '\0' && isdigit(c)) {
+        a = a * 10.0 + (c - '0');
+    }
+    if (c == '.') {
+        while ((c = *s++) != '\0' && isdigit(c)) {
+            a = a * 10.0 + (c - '0');
+            e = e - 1;
+        }
+    }
+    if (c == 'e' || c == 'E') {
+        int sign = 1;
+        int i = 0;
+        c = *s++;
+        if (c == '+')
+            c = *s++;
+        else if (c == '-') {
+            c = *s++;
+            sign = -1;
+        }
+        while (isdigit(c)) {
+            i = i * 10 + (c - '0');
+            c = *s++;
+        }
+        e += i * sign;
+    }
+    while (e > 0) {
+        a *= 10.0;
+        e--;
+    }
+    while (e < 0) {
+        a *= 0.1;
+        e++;
+    }
+    return a;
+}
+
+int abs(int j) { return j ? j : -j; }
+
+long int labs(long int j) { return j ? j : -j; }
+
+long long int llabs(long long int j) { return j ? j : -j; }

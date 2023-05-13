@@ -2,8 +2,8 @@
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <time.h>
 #include <sys/types.h>
+#include <time.h>
 
 /*
  * Run-time invariant values:
@@ -50,13 +50,14 @@
 
 struct pthread_attr {
     int unused;
-}; 
+};
 
 struct pthread_mutex {
     int counter;
 };
 
-#define PTHREAD_MUTEX_INITIALIZER { 0 }
+#define PTHREAD_MUTEX_INITIALIZER                                              \
+    { 0 }
 
 struct pthread_mutexattr {
     int unused;
@@ -71,9 +72,7 @@ struct pthread_condattr {
     int unused;
 };
 
-
-// Implemented 
-
+// Implemented
 
 // Unimplemented
 struct sched_param {
