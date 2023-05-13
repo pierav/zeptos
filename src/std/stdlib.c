@@ -29,6 +29,8 @@ int getchar() { return _getchar(); }
 
 int putchar(int ch) { return _putchar(ch); }
 
+int atoi(const char *nptr) { return strtol(nptr, (char **)NULL, 10); }
+
 long strtol(const char *nptr, char **endptr, int base) {
     const char *s;
     unsigned long acc;

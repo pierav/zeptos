@@ -1,7 +1,7 @@
 #pragma once
 #include <stdlib.h>
+#include <sys/types.h>
 
-typedef long long time_t; /* Seconds since the Epoch.  */
 
 struct tm {
     int tm_sec;     /* seconds after the minute [0-60] */
@@ -31,8 +31,6 @@ struct timezone {
     int tz_minuteswest; /* minutes west of Greenwich */
     int tz_dsttime;     /* type of DST correction */
 };
-
-typedef int clockid_t;
 
 #define CLOCK_REALTIME 0
 #define CLOCK_MONOTONIC 1

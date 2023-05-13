@@ -25,6 +25,11 @@ void _malloc_addblock(void *addr, size_t size);
  */
 void _init_serial(int (*__getchar)(void), int (*__putchar)(int));
 
+
+int atoi(const char *nptr);
+long atol(const char *nptr);
+long long atoll(const char *nptr);
+
 unsigned long strtoul(const char *nptr, char **endptr, register int base);
 long strtol(const char *nptr, char **endptr, int base);
 

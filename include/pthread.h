@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/types.h>
 
 /*
  * Run-time invariant values:
@@ -47,54 +48,32 @@
 
 // Implemented types
 
-/*** pthread_t  ***/
-typedef int pthread_t;
-typedef struct pthread_attr {
+struct pthread_attr {
     int unused;
-} pthread_attr_t;
+}; 
 
-/*** pthread_mutex_t  ***/
-#define PTHREAD_MUTEX_INITIALIZER                                              \
-    { 0 }
-typedef struct pthread_mutex {
+struct pthread_mutex {
     int counter;
-} pthread_mutex_t;
-typedef struct pthread_mutexattr {
-    int unused;
-} pthread_mutexattr_t;
+};
 
-/*** pthread_cond_t  ***/
-typedef struct pthread_cond {
+#define PTHREAD_MUTEX_INITIALIZER { 0 }
+
+struct pthread_mutexattr {
+    int unused;
+};
+
+struct pthread_cond {
     uint64_t users;
     pthread_mutex_t mutex;
-} pthread_cond_t;
-typedef struct pthread_condattr {
+};
+
+struct pthread_condattr {
     int unused;
-} pthread_condattr_t;
+};
 
-// static inline int atomic_xchg(atomic_t *v, int n) {
-//     register int c;
 
-//     __asm__ __volatile__("amoswap.w.aqrl %0, %2, %1"
-//                          : "=r"(c), "+A"(v->counter)
-//                          : "r"(n));
-//     return c;
-// }
+// Implemented 
 
-// static inline void mb(void) {
-//     // __asm__ __volatile__ ("fence");
-// }
-
-// void get_lock(atomic_t *lock) {
-//     while (atomic_xchg(lock, 1) == 1)
-//         ;
-//     mb();
-// }
-
-// void put_lock(atomic_t *lock) {
-//     mb();
-//     atomic_xchg(lock, 0);
-// }
 
 // Unimplemented
 struct sched_param {

@@ -1,3 +1,4 @@
 build
 *build
 
+apps/litmus/litmus-tests-riscv
