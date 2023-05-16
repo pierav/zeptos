@@ -1,6 +1,7 @@
 // taken from
 // https://elixir.bootlin.com/linux/v6.3-rc6/source/lib/vsprintf.c#L3410
 
+// TODO: %f https://github.com/ShivanKaul/libslack/blob/master/snprintf.c#L698
 #include "bitset.h"
 #include <ctype.h>
 #include <errno.h>

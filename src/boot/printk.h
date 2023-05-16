@@ -28,7 +28,7 @@ extern int printk_time;
         asm volatile("csrr %[reg], mhartid" : [reg] "=r"(mhartid));            \
         printf("[%8ld][%01d] " __MODULE__ "::%s: " fmt, rdcyc(), mhartid,      \
                __PRETTY_FUNCTION__, ##__VA_ARGS__);                            \
-    } while (0);
+    } while (0)
 #endif
 
 #define panic(fmt, ...)                                                        \
@@ -36,4 +36,4 @@ extern int printk_time;
         printk(" *** Kernel panic *** \n");                                    \
         printk(fmt, ##__VA_ARGS__);                                            \
         exit(1);                                                               \
-    } while (0);
+    } while (0)

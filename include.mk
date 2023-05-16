@@ -12,6 +12,7 @@ ZEPTOS_INCLUDE 	:= $(ZETPOS_PATH)/include
 XLEN			:= 64
 PREFIX 			:= riscv$(XLEN)-unknown-elf-
 CC 				:= $(PREFIX)gcc
+LD 				:= $(PREFIX)ld
 
 ZEPTOS_CFLAGS 	= -DPREALLOCATE=1 -mcmodel=medany \
 			  	  -MMD -MP \

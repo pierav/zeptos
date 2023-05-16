@@ -4,6 +4,7 @@
 #include "dts.h"
 #include "encoding.h"
 #include "fdt.h"
+#include "filesystem.h"
 #include "libfdt.h"
 #include "libfdt_env.h"
 #include "printk.h"
@@ -171,6 +172,10 @@ void _init(uint64_t cid, uint64_t dtb) {
     printk("Setup dyn memory...\n");
     // TODO Dts &_end + stacks...
     _malloc_addblock((void *)0x88000000, 16 * 128 * 1024); // Lest add 128 kB
+
+    // Initialise file system
+    printk("Initialise file system...\n");
+    fs_init();
 
     // Parse DTS
     // printk("fdt_version(p)=%d\n", fdt_version(fdt));
