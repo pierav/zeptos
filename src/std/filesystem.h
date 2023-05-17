@@ -9,6 +9,7 @@ enum _fnode_type { FNODE_D = 0, FNODE_F };
 
 typedef struct __fnode_polymorph {
     enum _fnode_type type;
+    struct stat stat;
     char *path;
     fnode_t *_next;
 } __fnode_polymorph_t;
@@ -20,7 +21,6 @@ typedef struct _fnode_dir {
 
 typedef struct _fnode_file {
     __fnode_polymorph_t metadata; // must be first
-    struct stat stat;
     void *base;
 } _fnode_f_t;
 
@@ -34,13 +34,19 @@ union fnode {
 
 #define FNODE_F_INIT(__name, __stat, __base, __next)                           \
     (fnode_t)(_fnode_f_t) {                                                    \
-        .metadata = {.type = FNODE_F, .path = __name, ._next = __next},        \
-        .stat = __stat, .base = __base                                         \
+        .metadata = {.type = FNODE_F,                                          \
+                     .stat = __stat,                                           \
+                     .path = __name,                                           \
+                     ._next = __next},                                         \
+        .base = __base                                                         \
     }
 
-#define FNODE_D_INIT(__name, __subs, __next)                                   \
+#define FNODE_D_INIT(__name, __stat, __subs, __next)                           \
     (fnode_t)(_fnode_d_t) {                                                    \
-        .metadata = {.type = FNODE_D, .path = __name, ._next = __next},        \
+        .metadata = {.type = FNODE_D,                                          \
+                     .stat = __stat,                                           \
+                     .path = __name,                                           \
+                     ._next = __next},                                         \
         .subs = __subs                                                         \
     }
 
@@ -48,3 +54,5 @@ int fs_init();
 
 typedef void *(*fs_visitor_f)(const fnode_t *fn, void *arg);
 void *fnode_visit(const fnode_t *fn, fs_visitor_f f, void *args);
+
+fnode_t *fs_get_node(const char *path);

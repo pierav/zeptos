@@ -10,13 +10,19 @@ incdir 		= $(shell find src -type d) include config
 INCS 		= $(foreach dir, ${incdir}, -I$(dir))
 
 export ZETPOS_PATH=$(CURDIR)
+export ZEPTOS_RAMFS_PATH=$(CURDIR)/ramfs
+
+ZEPTOS_RAMFS_CPIO 	= $(ZETPOS_PATH)/build/ramfs.cpio
+ZEPTOS_RAMFS_OBJ 	= $(ZETPOS_PATH)/build/ramfs.o
+
 include include.mk
 
 SRC_C 		:= $(shell find ./src -type f -name '*.c')
 SRC_S 		:= $(shell find ./src -type f -name '*.S')
 
 OBJ 		:= $(subst src/,build/,$(SRC_C:.c=_$(MODEL).o)) \
-			   $(subst src/,build/,$(SRC_S:.S=_$(MODEL).o))
+			   $(subst src/,build/,$(SRC_S:.S=_$(MODEL).o)) \
+			   $(ZEPTOS_RAMFS_OBJ)
 
 LIB 		= build/libzeptos_$(MODEL).a
 EXEC 		= build/libzeptos_$(MODEL)
@@ -49,6 +55,24 @@ $(CONFIG_HEADER): $(KCONFIG_CONFIG) force
 	genconfig --header-path $(CONFIG_HEADER)
 
 .phony: menuconfig genconfig
+
+###
+# Filesystem image
+###
+
+# Create CPIO with the new (SVR4) portable format
+$(ZEPTOS_RAMFS_CPIO): $(ZEPTOS_RAMFS_PATH)
+	@mkdir -p $(@D)
+	cd $^ && find . | cpio -oV -H newc > $@
+
+# Create ELF fs independent
+# This must create symbols:
+# D _binary_ramfs_cpio_end
+# A _binary_ramfs_cpio_size
+# D _binary_ramfs_cpio_start
+$(ZEPTOS_RAMFS_OBJ): $(ZEPTOS_RAMFS_CPIO)
+	cd $(^D) && $(LD) -r -b binary $(notdir $^) -o $@
+	nm $@
 
 ###	
 # Build

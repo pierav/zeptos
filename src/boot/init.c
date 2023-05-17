@@ -177,6 +177,21 @@ void _init(uint64_t cid, uint64_t dtb) {
     printk("Initialise file system...\n");
     fs_init();
 
+    FILE *fp = fopen("/etc/hostname", "r");
+    if (!fp) {
+        panic("Missing hostname");
+    }
+    int c;
+    while ((c = fgetc(fp)) != EOF) {
+        printf("%c", c);
+    }
+    rewind(fp);
+    char buf[100];
+    while (fgets(buf, 100, fp)) {
+        printk("hostname is '%s'\n", buf);
+    }
+    fclose(fp);
+
     // Parse DTS
     // printk("fdt_version(p)=%d\n", fdt_version(fdt));
     // printk("fdt_last_comp_version(p)=%d\n", fdt_last_comp_version(fdt));

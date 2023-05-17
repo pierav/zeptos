@@ -1,100 +1,17 @@
 // * Lets create a minimal ram filesystem *
 
 #include "filesystem.h"
+#include "fs_stat.h"
 #include "printk.h"
 #include <assert.h>
 #include <errno.h>
-#include <stdarg.h> // va_list
 #include <stddef.h> // size_t
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-
-#define BUFSIZ 1024 /* size of buffer used by setbuf */
-#define EOF (-1)
-
-#define FOPEN_MAX 20
-#define FILENAME_MAX 1024
-#define TMP_MAX 1 /* todo */
-
-#define SEEK_SET 0 /* set file offset to offset */
-#define SEEK_CUR 1 /* set file offset to current plus offset */
-#define SEEK_END 2 /* set file offset to EOF plus offset */
-
-typedef struct FILE FILE;
-
-struct FILE {
-    uint64_t id; // Unique ID
-    void *base;  // Memory base address
-
-    char *filename; //
-    uint64_t size;  // File size
-    uint64_t pos;   // current position in file
-};
-
-FILE *stdout = NULL;
-FILE *stderr = NULL;
-FILE *stdin = NULL;
-
-int fprintf(FILE *stream, const char *format, ...) {
-    va_list vl;
-    va_start(vl, format);
-    vprintf(format, vl);
-    va_end(vl);
-    return 0;
-}
-
-int fputc(int c, FILE *stream) { return putchar(c); }
-
-int putc(int c, FILE *stream) { return putchar(c); }
-
-int vfprintf(FILE *stream, const char *format, va_list ap) {
-    return vprintf(format, ap);
-}
-
-FILE *fopen(const char *filename, const char *mode) { return NULL; }
-int fclose(FILE *stream) { return 0; }
-int fflush(FILE *stream) { return 0; }
-
-int fgetc(FILE *stream) { return EOF; }
-
-FILE *fopen(const char *restrict pathname, const char *restrict mode);
-int fclose(FILE *stream);
-
-int fseek(FILE *stream, long offset, int whence) {
-    uint64_t nextpos;
-    switch (whence) {
-    case SEEK_CUR:
-        nextpos = stream->pos + offset;
-        break;
-    case SEEK_SET:
-        nextpos = offset;
-        break;
-    case SEEK_END:
-        nextpos = stream->size;
-        break;
-    default:
-        errno = EINVAL;
-        return EOF;
-    }
-
-    if (nextpos > stream->size) {
-        errno = EINVAL;
-        return EOF;
-    }
-
-    stream->pos = nextpos;
-    return 0;
-}
-
-long ftell(FILE *stream) { return stream->pos; }
-
-void rewind(FILE *stream) { stream->pos = 0; }
-
-// int fgetpos(FILE *stream, fpos_t *pos);
-// int fsetpos(FILE *stream, const fpos_t *pos);
+#include <time.h>
 
 // External
 // TODO: generic
@@ -159,9 +76,14 @@ void *fnode_visit(const fnode_t *fn, fs_visitor_f f, void *args) {
     return args;
 }
 
-#include <string.h>
-
 char *_fnode_type_str[] = {"FNODE_D", "FNODE_F"};
+
+void _fs_node_dump(const fnode_t *fn, char *path) {
+    char *mode_s = strmode(fn->metadata.stat.st_mode);
+    char *time_s = ctime(&fn->metadata.stat.st_mtime);
+    printf("fnode %x [%s]: %s %s %s\n", fn, _fnode_type_str[fn->metadata.type],
+           mode_s, time_s, path);
+}
 
 void _fs_dump(const fnode_t *fn, void *args) {
     char *base_path = args;
@@ -169,7 +91,8 @@ void _fs_dump(const fnode_t *fn, void *args) {
     size_t size = strlen(args);
     strcat(args, " | ");
     strcat(args, fn->metadata.path);
-    printf("fnode %x [%s]: %s\n", fn, _fnode_type_str[fn->metadata.type], args);
+
+    _fs_node_dump(fn, args);
     switch (fn->metadata.type) {
     case FNODE_D: {
         for (fnode_t *fni = ((const _fnode_d_t *)fn)->subs; fni != NULL;
@@ -190,10 +113,10 @@ void fs_tree(const fnode_t *fn) {
     _fs_dump(fn, local_path);
 }
 
-fnode_t *fs_get_node(char *path) {
+fnode_t *fs_get_node(const char *path) {
     fnode_t *cur = NULL, *next = root;
-    char *begin = path;
-    for (char *end = begin, *old_end = end; *old_end != '\0';
+    const char *begin = path;
+    for (const char *end = begin, *old_end = end; *old_end != '\0';
          old_end = end, end++) {
         if (*end == '/' || *end == '\0') {
             // Begin
@@ -249,7 +172,7 @@ fnode_t *_fs_create_node_indep(char *path, fnode_t **cur) {
             // Create new node
             new = _fnode_table_allocate();
             char *name = _string_table_allocate(begin, size);
-            *new = FNODE_D_INIT(name, NULL, NULL);
+            *new = FNODE_D_INIT(name, {0}, NULL, NULL);
             // printf("Allocate %s\n", name);
 
             *cur = new;
@@ -308,7 +231,7 @@ extern char _binary_ramfs_cpio_end;
 
 #include "cpio.h"
 
-char *path_fixup(char *path, char *buff) {
+char *path_fixup(const char *path, char *buff) {
     if (path[0] != '/') {
         sprintf(buff, "/%s", path);
     }
@@ -323,8 +246,39 @@ char *path_filename(char *path) {
     return path;
 }
 
+#define FS_STAT_F_INIT(basefile)                                               \
+    (struct stat) {                                                            \
+        .st_mode = S_IFREG | S_IRUSR | S_IRGRP | S_IROTH,                      \
+        .st_size = sizeof(basefile),                                           \
+        .st_blksize = (blksize_t)sizeof(basefile), .st_blocks = (blkcnt_t)1    \
+    }
+
+char *_fs_etc_hostname_data = "zeptos";
+
+void _fs_init_base_filesystem() {
+    // Create few nodes. By default nodes are dirs
+    fs_create_node("/dev/", root);
+    fs_create_node("/tmp/", root);
+    fnode_t *fn = fs_create_node("/etc/hostname", root);
+    if (fn) { // Not in CPIO
+        *fn = FNODE_F_INIT("hostname", FS_STAT_F_INIT(_fs_etc_hostname_data),
+                           _fs_etc_hostname_data, NULL);
+    }
+
+    // Simple runtime test
+#if 1
+    fnode_t *hostname = fs_get_node("/etc/hostname");
+    if (!hostname) {
+        panic("Missing /etc/hostname\n");
+    }
+    if (hostname->metadata.type != FNODE_F) {
+        panic("Bad file /etc/hostname\n");
+    }
+#endif
+}
+
 fnode_t *_fs_node_file_from_cpio(const struct cpio_header *header,
-                                 struct cpio_header_info *header_info,
+                                 const struct cpio_header_info *header_info,
                                  fnode_t *root) {
 #define PARSE_HEX(s) parse_hex_str(s, sizeof(s))
 
@@ -332,6 +286,8 @@ fnode_t *_fs_node_file_from_cpio(const struct cpio_header *header,
     mode_t st_mode = (mode_t)PARSE_HEX(header->c_mode);
     nlink_t st_nlink = (nlink_t)PARSE_HEX(header->c_nlink);
     time_t st_mtime = (time_t)PARSE_HEX(header->c_mtime);
+    off_t st_size = header_info->filesize;
+    uint8_t *base = (uint8_t *)header_info->data;
 
     char path[FILENAME_MAX];
     path_fixup(header_info->filename, path);
@@ -345,8 +301,8 @@ fnode_t *_fs_node_file_from_cpio(const struct cpio_header *header,
                          .st_uid = (uid_t)0,
                          .st_gid = (gid_t)0,
                          .st_rdev = (dev_t)0,
-                         .st_size = (off_t)header_info->filesize,
-                         .st_blksize = (blksize_t)header_info->filesize,
+                         .st_size = st_size,
+                         .st_blksize = (blksize_t)st_size,
                          .st_blocks = (blkcnt_t)1,
                          .st_atime = (time_t)0,
                          .st_mtime = st_mtime,
@@ -361,36 +317,14 @@ fnode_t *_fs_node_file_from_cpio(const struct cpio_header *header,
         // Default is DIR
     } else if (S_ISREG(mstat.st_mode)) {
         // Initialise FILE
-        *fn = FNODE_F_INIT(fn->metadata.path, mstat, header_info->data, NULL);
+        *fn = FNODE_F_INIT(fn->metadata.path, mstat, base, NULL);
     } else {
         panic("Invalid file type mstat.st_mode=%x\n", mstat.st_mode);
     }
     return fn;
 }
 
-int fs_init() {
-    // Setup root
-    root = _fnode_table_allocate();
-    *root = FNODE_D_INIT("/", NULL, NULL);
-
-    // Create few nodes. By default nodes are dirs
-    fs_create_node("/dev/", root);
-    fs_create_node("/tmp/", root);
-    fnode_t *fn = fs_create_node("/etc/hostname", root);
-    *fn = FNODE_F_INIT("hostname", {}, NULL, NULL);
-
-    // print tree tree
-    fs_tree(root);
-
-    fnode_t *hostname = fs_get_node("/etc/hostname");
-    if (!hostname) {
-        panic("Missing /etc/hostname\n");
-    }
-    if (hostname->metadata.type != FNODE_F) {
-        panic("Bad file /etc/hostname\n");
-    }
-    printk("Hit hostname: %s\n", hostname->metadata.path);
-
+void _fs_init_cpio() {
     // Initialise CPIO
     char *archive = &_binary_ramfs_cpio_start;
     size_t len = &_binary_ramfs_cpio_end - &_binary_ramfs_cpio_start;
@@ -413,10 +347,19 @@ int fs_init() {
         printk("CPIO hit : %s #%d @%p\n", header_info.filename,
                header_info.filesize, header_info.data);
         _fs_node_file_from_cpio(header, &header_info, root);
-
         cur_len = cpio_len_next(cur_len, header, header_info.next);
         header = header_info.next;
     }
+}
+
+int fs_init() {
+    // Setup root
+    root = _fnode_table_allocate();
+    *root = FNODE_D_INIT("/", {0}, NULL, NULL);
+    _fs_init_cpio();
+    _fs_init_base_filesystem();
+
+    // Print tree
     fs_tree(root);
 
     return 0;
