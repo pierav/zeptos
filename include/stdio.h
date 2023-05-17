@@ -125,3 +125,6 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
 // - rename file relative to directory file descriptor
 int rename(const char *old, const char *new);
 int renameat(int oldfd, const char *old, int newfd, const char *new);
+
+// - print a system error message
+void perror(const char *s);

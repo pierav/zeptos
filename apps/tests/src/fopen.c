@@ -6,7 +6,7 @@ int main(void){
     FILE *fp = fopen("/hello.txt", "r");
     if(!fp){
         perror(NULL);
-        exit(1);
+        return 1;
     }
 
     char buff[256];
@@ -15,4 +15,6 @@ int main(void){
     }
 
     fclose(fp);
+
+    return 0;
 }

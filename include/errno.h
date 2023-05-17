@@ -3,6 +3,8 @@
 /* Function to get address of global `errno' variable.  */
 extern int *__errno_location(void) __attribute__((__const__));
 
+extern const char * const sys_errlist[];
+
 #define errno (*__errno_location())
 
 #define EPERM 1            /* Operation not permitted */
