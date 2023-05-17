@@ -120,22 +120,15 @@ fnode_t *fs_get_node(const char *path) {
          old_end = end, end++) {
         if (*end == '/' || *end == '\0') {
             // Begin
-            if (!next) {
+            if (!next) { // No more node to explore
                 return NULL;
             }
 
             int size = end - begin + 1;
-            // if(!cur->metadata.type != FNODE_D){
-            //     return NULL;
-            // }
-            // Iterate over cur subs
-            // fnode_t *s = ((_fnode_d_t*)cur)->subs;
-            cur = next;
-            // next = cur;
-
             while (next) {
                 // printf("%.*s == %s ?\n", size, begin, next->metadata.path);
                 if (memcmp(begin, next->metadata.path, size) == 0) {
+                    cur = next;
                     next = ((_fnode_d_t *)next)->subs;
                     break;
                 }

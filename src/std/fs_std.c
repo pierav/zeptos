@@ -15,12 +15,42 @@ FILE *stdout = (FILE *)0;
 FILE *stderr = (FILE *)1;
 FILE *stdin = (FILE *)2;
 
+int feof(FILE *stream) {
+    panic("Unimplemented\n");
+    return 0;
+}
+
 int fprintf(FILE *stream, const char *format, ...) {
     va_list vl;
     va_start(vl, format);
-    vfprintf(stream, format, vl);
+    int ret = vfprintf(stream, format, vl);
     va_end(vl);
-    return 0;
+    return ret;
+}
+
+int fscanf(FILE *stream, const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    int i = vfscanf(stream, format, args);
+    va_end(args);
+    return i;
+}
+
+int vfscanf(FILE *stream, const char *format, va_list ap) {
+    if (stream == stdout || stream == stderr) {
+        return EOF;
+    }
+    if (stream == stdin) {
+        panic("Unimplemented\n");
+        return EOF;
+    }
+    _fnode_f_t *fn = (_fnode_f_t *)stream->fn;
+    // off_t stream_size = fn->metadata.stat.st_size;
+    // if (stream->pos == stream_size) {
+    //     return EOF;
+    // }
+    char *buf = &((char *)fn->base)[stream->pos];
+    return vsscanf(buf, format, ap);
 }
 
 int fputc(int c, FILE *stream) {
@@ -51,6 +81,7 @@ FILE *fopen(const char *filename, const char *mode) {
         return NULL;
     }
 
+    // TODO open()
     fnode_t *fn = fs_get_node(filename);
     if (!fn) {
         errno = EINVAL;
@@ -121,6 +152,46 @@ char *fgets(char *s, int size, FILE *stream) {
     return (c == EOF && cs == s) ? NULL : s;
 }
 
+int fputs(const char *s, FILE *stream) {
+    panic("Unimplemented\n");
+    return 0;
+}
+
+_fnode_f_t *_file_check_readeable(FILE *stream) {
+    _fnode_f_t *fn = (_fnode_f_t *)stream->fn;
+    return fn;
+}
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+    _fnode_f_t *fn = _file_check_readeable(stream);
+    if (!fn) {
+        return 0;
+    }
+    off_t stream_size = fn->metadata.stat.st_size;
+    off_t stream_pos = stream->pos;
+
+    off_t delta_bytes = stream_size - stream_pos;
+    off_t delta_block = delta_bytes / size;
+
+    // Max block
+    off_t eff_delta_block = MIN(delta_block, nmemb);
+    off_t eff_delta_bytes = eff_delta_block * size;
+
+    // Block read and copy
+    char *cur_base = &((char *)fn->base)[stream->pos];
+    stream->pos += eff_delta_bytes;
+    memcpy(ptr, cur_base, eff_delta_bytes);
+
+    return eff_delta_bytes;
+}
+
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
+    panic("Unimplemented\n");
+    return 0;
+}
+
 int fseek(FILE *stream, long offset, int whence) {
     uint64_t nextpos;
     _fnode_f_t *fn = (_fnode_f_t *)stream->fn;
@@ -155,3 +226,13 @@ void rewind(FILE *stream) { stream->pos = 0; }
 
 // int fgetpos(FILE *stream, fpos_t *pos);
 // int fsetpos(FILE *stream, const fpos_t *pos);
+
+int rename(const char *old, const char *new) {
+    panic("Unimplemented\n");
+    return 0;
+}
+
+int unlink(const char *path) {
+    panic("Unimplemented\n");
+    return 0;
+}

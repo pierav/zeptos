@@ -57,3 +57,5 @@ const unsigned char
                 _L,       _L,      _L,      _L,      _L,      _L,
                 _L,       _P,      _L,      _L,      _L,      _L,
                 _L,       _L,      _L,      _L}; /* 240-255 */
+
+int isdigit(int c) { return '0' <= (c) && (c) <= '9'; }

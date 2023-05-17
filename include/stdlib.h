@@ -47,3 +47,8 @@ void srand(uint64_t seed);
 int abs(int j);
 long int labs(long int j);
 long long int llabs(long long int j);
+
+#include <stdlib.h>
+
+char *getenv(const char *name);
+char *secure_getenv(const char *name);

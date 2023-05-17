@@ -9,7 +9,13 @@ char *strmode(mode_t mode) {
 
 char *strmode_r(mode_t mode, char *buf) {
     const char chars[] = "rwx";
-    buf[0] = S_ISDIR(mode) ? 'd' : '-';
+    buf[0] = S_ISDIR(mode)
+                 ? 'd'
+                 : S_ISREG(mode)
+                       ? 'f'
+                       : S_ISCHR(mode)
+                             ? 'c'
+                             : S_ISBLK(mode) ? 'b' : S_ISFIFO(mode) ? 'f' : '-';
     for (size_t i = 0; i < 9; i++) {
         buf[i + 1] = (mode & (1 << (8 - i))) ? chars[i % 3] : '-';
     }

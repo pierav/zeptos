@@ -23,3 +23,10 @@ char *strcpy(char *dest, const char *src);
 char *strncpy(char *dest, const char *src, size_t n);
 
 char *strerror(int errnum);
+
+// - locate a substring
+char *strstr(const char *haystack, const char *needle);
+
+// - extract tokens from strings
+char *strtok(char *str, const char *delim);
+char *strtok_r(char *str, const char *delim, char **saveptr);

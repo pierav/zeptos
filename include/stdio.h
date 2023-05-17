@@ -74,6 +74,15 @@ int vdprintf(int fd, const char *format, va_list ap);
 int vsprintf(char *str, const char *format, va_list ap);
 int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
+// - input format conversion
+int scanf(const char *format, ...);
+int fscanf(FILE *stream, const char *format, ...);
+int sscanf(const char *str, const char *format, ...);
+
+int vscanf(const char *format, va_list ap);
+int vsscanf(const char *str, const char *format, va_list ap);
+int vfscanf(FILE *stream, const char *format, va_list ap);
+
 // - stream open functions
 FILE *fopen(const char *pathname, const char *mode);
 FILE *fdopen(int fd, const char *mode);
@@ -81,6 +90,9 @@ FILE *freopen(const char *pathname, const char *mode, FILE *stream);
 
 // - close a stream
 int fclose(FILE *stream);
+
+// - create a temporary file
+FILE *tmpfile(void);
 
 // - flush a stream
 int fflush(FILE *stream);
@@ -105,3 +117,11 @@ long ftell(FILE *stream);
 void rewind(FILE *stream);
 // int fgetpos(FILE *stream, fpos_t *pos);
 // int fsetpos(FILE *stream, const fpos_t *pos);
+
+// - binary stream input/output
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+
+// - rename file relative to directory file descriptor
+int rename(const char *old, const char *new);
+int renameat(int oldfd, const char *old, int newfd, const char *new);
