@@ -114,32 +114,34 @@ void fs_tree(const fnode_t *fn) {
 }
 
 fnode_t *fs_get_node(const char *path) {
-    fnode_t *cur = NULL, *next = root;
     const char *begin = path;
-    for (const char *end = begin, *old_end = end; *old_end != '\0';
-         old_end = end, end++) {
-        if (*end == '/' || *end == '\0') {
-            // Begin
-            if (!next) { // No more node to explore
-                return NULL;
-            }
+    int size;
+    fnode_t *cur = NULL, *next = root;
 
-            int size = end - begin + 1;
-            while (next) {
-                // printf("%.*s == %s ?\n", size, begin, next->metadata.path);
-                if (memcmp(begin, next->metadata.path, size) == 0) {
-                    cur = next;
-                    next = ((_fnode_d_t *)next)->subs;
-                    break;
-                }
-                next = next->metadata._next;
-            }
-
-            // End
-            begin = end + 1;
-        }
+    // Base path must be root
+    if (begin[0] != '/') {
+        return NULL;
     }
+    begin++;
+    next = ((_fnode_d_t *)next)->subs;
 
+    while ((begin = path_iterator_r(begin, &size))) {
+        if (!next) { // No more node to explore
+            return NULL;
+        }
+        while (next) {
+            // printf("%.*s == %s ?\n", size, begin, next->metadata.path);
+            if (memcmp(begin, next->metadata.path, size) == 0) {
+                cur = next;
+                next = ((_fnode_d_t *)next)->subs;
+                break;
+            }
+            next = next->metadata._next;
+        }
+        begin += size;
+    }
+    printk("%s -> node %x %s\n", path, cur,
+           cur ? strmode(cur->metadata.stat.st_mode) : "");
     return cur;
 }
 

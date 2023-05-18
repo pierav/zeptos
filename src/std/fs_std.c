@@ -90,6 +90,7 @@ FILE *fopen(const char *filename, const char *mode) {
 
     if (!S_ISREG(fn->metadata.stat.st_mode)) {
         errno = EISDIR;
+        printk("Failure open %s: EISDIR\n", filename);
         return NULL;
     }
 
@@ -117,7 +118,10 @@ int fclose(FILE *stream) {
     free(stream);
     return 0;
 }
-int fflush(FILE *stream) { panic("Unimplemented !\n"); }
+int fflush(FILE *stream) {
+    // We only have unbuffered streams
+    return 0;
+}
 
 int fgetc(FILE *stream) {
     if (stream == stdout || stream == stderr) {

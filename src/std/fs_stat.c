@@ -22,3 +22,20 @@ char *strmode_r(mode_t mode, char *buf) {
     buf[10] = '\0';
     return buf;
 }
+
+const char *path_iterator_r(const char *path, int *bufsize) {
+    const char *begin = path;
+    // Remove leading /
+    while (*begin == '/') {
+        begin++;
+    }
+    for (const char *end = begin, *old_end = end; *old_end != '\0';
+         old_end = end, end++) {
+        if (*end == '/' || *end == '\0') {
+            *bufsize = end - begin + 1;
+            // printf("path_iterator_r #%d %.*s\n", *bufsize, *bufsize, begin);
+            return begin;
+        }
+    }
+    return NULL;
+}
