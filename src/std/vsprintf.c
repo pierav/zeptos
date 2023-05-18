@@ -1152,7 +1152,7 @@ int sprintf(char *buf, const char *fmt, ...) {
 #endif
 int vsscanf_internal(const char *buf, const char *fmt, va_list args,
                      char **endptr) {
-    printk("%.50s... : %s\n", buf, fmt);
+    // printk("%.50s... : %s\n", buf, fmt);
     const char *str = buf;
     char *next;
     char digit;
@@ -1355,6 +1355,9 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
             }
             continue;
         case 'f':
+        case 'e':
+        case 'g':
+        case 'E':
             is_sign = true;
             is_float = true;
             break;
@@ -1384,9 +1387,7 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
             break;
 
         if (is_float) {
-            printk("try simple_strtod... %s\n", str);
             val.d = simple_strtod(str, &next);
-            printk("ok %d\n", (int)val.d);
         } else if (is_sign) {
             val.s = simple_strntoll(
                 str, field_width >= 0 ? field_width : INT_MAX, &next, base);
@@ -1438,7 +1439,7 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
 
         if (!next)
             break;
-        printk("Continue on %s\n", next);
+        // printk("Continue on %s\n", next);
         str = next;
     }
     *endptr = str;
