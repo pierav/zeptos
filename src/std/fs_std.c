@@ -50,7 +50,10 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
     //     return EOF;
     // }
     char *buf = &((char *)fn->base)[stream->pos];
-    return vsscanf(buf, format, ap);
+    char *endptr;
+    int delta = vsscanf_internal(buf, format, ap, &endptr);
+    stream->pos += buf - endptr;
+    return delta;
 }
 
 int fputc(int c, FILE *stream) {
@@ -123,7 +126,7 @@ int fflush(FILE *stream) {
     return 0;
 }
 
-int fgetc(FILE *stream) {
+int _fgetc(FILE *stream) {
     if (stream == stdout || stream == stderr) {
         return EOF;
     } else if (stream == stdin) {
@@ -142,6 +145,12 @@ int fgetc(FILE *stream) {
     return ret;
 }
 
+int fgetc(FILE *stream) {
+    int ret = _fgetc(stream);
+    // printk("(%x) -> %c\n", stream, ret);
+    return ret;
+}
+
 int getc(FILE *stream) { return fgetc(stream); }
 
 char *fgets(char *s, int size, FILE *stream) {
@@ -149,11 +158,13 @@ char *fgets(char *s, int size, FILE *stream) {
     int c;
     char *cs;
     cs = s;
-    while (--size > 0 && (c = fgetc(stream)) != EOF)
+    while (--size > 0 && (c = _fgetc(stream)) != EOF)
         if ((*cs++ = c) == '\n')
             break;
     *cs = '\0';
-    return (c == EOF && cs == s) ? NULL : s;
+    char *ret = (c == EOF && cs == s) ? NULL : s;
+    printk("%x #%d -> %s\n", stream, size, ret);
+    return ret;
 }
 
 int fputs(const char *s, FILE *stream) {
@@ -188,7 +199,9 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     stream->pos += eff_delta_bytes;
     memcpy(ptr, cur_base, eff_delta_bytes);
 
-    return eff_delta_bytes;
+    size_t ret = eff_delta_bytes;
+    printk("(%x, %d, %d, %x) -> %d\n", ptr, size, nmemb, stream, ret);
+    return ret;
 }
 
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
@@ -226,7 +239,10 @@ int fseek(FILE *stream, long offset, int whence) {
 
 long ftell(FILE *stream) { return stream->pos; }
 
-void rewind(FILE *stream) { stream->pos = 0; }
+void rewind(FILE *stream) {
+    stream->pos = 0;
+    printk("(%x)\n", stream);
+}
 
 // int fgetpos(FILE *stream, fpos_t *pos);
 // int fsetpos(FILE *stream, const fpos_t *pos);

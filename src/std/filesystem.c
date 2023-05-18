@@ -133,7 +133,11 @@ fnode_t *fs_get_node(const char *path) {
             // printf("%.*s == %s ?\n", size, begin, next->metadata.path);
             if (memcmp(begin, next->metadata.path, size) == 0) {
                 cur = next;
-                next = ((_fnode_d_t *)next)->subs;
+                if (next->metadata.type == FNODE_D) {
+                    next = ((_fnode_d_t *)next)->subs;
+                } else {
+                    // next = NULL;
+                }
                 break;
             }
             next = next->metadata._next;
@@ -286,7 +290,7 @@ fnode_t *_fs_node_file_from_cpio(const struct cpio_header *header,
 
     char path[FILENAME_MAX];
     path_fixup(header_info->filename, path);
-    char *filename = path_filename(path);
+    // char *filename = path_filename(path);
 
     // printk(" path = %s, filename = %s\n", path, filename);
     struct stat mstat = {.st_dev = 0,
