@@ -1,5 +1,6 @@
 #include "filesystem.h"
 #include "printk.h"
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +53,9 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
     char *buf = &((char *)fn->base)[stream->pos];
     char *endptr;
     int delta = vsscanf_internal(buf, format, ap, &endptr);
-    stream->pos += buf - endptr;
+    assert(endptr);
+    stream->pos += endptr - buf;
+    // printk("********** Read %d char in stream %x\n", endptr - buf, stream);
     return delta;
 }
 
@@ -163,7 +166,7 @@ char *fgets(char *s, int size, FILE *stream) {
             break;
     *cs = '\0';
     char *ret = (c == EOF && cs == s) ? NULL : s;
-    printk("%x #%d -> %s\n", stream, size, ret);
+    // printk("%x #%d -> %s\n", stream, size, ret);
     return ret;
 }
 

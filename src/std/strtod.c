@@ -137,17 +137,15 @@ static double parse_number(const char *nptr, int base, int radix,
     }
 
     *endptr = (char *)s;
-    printk("num=%d, exp=%d end='%s'\n", (int)num, exponent, s);
+    // printk("num=%d, exp=%d\n", (int)num, exponent);
     return scale_radix_exp(num, radix, exponent);
 }
-
 
 double minus_zero = -0.0;
 
 /* Convert NPTR to a double.  If ENDPTR is not NULL, a pointer to the
    character after the last one used in the number is put in *ENDPTR.  */
 double strtod(const char *nptr, char **endptr) {
-    printk("%s\n", nptr);
     // return parse_number (nptr, 10, 10, 1, 'e', endptr);
 
     bool negative = false;
@@ -238,5 +236,8 @@ double strtod(const char *nptr, char **endptr) {
         *endptr = (char *)s;
     if (!num && negative)
         return minus_zero;
-    return negative ? -num : num;
+
+    double ret = negative ? -num : num;
+    // printk("%.20s -> %f\n", nptr, ret);
+    return ret;
 }
