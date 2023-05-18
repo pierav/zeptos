@@ -151,7 +151,13 @@ void *realloc(void *ptr, size_t size) {
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int cpt = 0;
 
+static uint64_t malloc0;
+
 void *malloc(size_t size) {
+    if (size == 0) {
+        return &malloc0;
+    }
+
     pthread_mutex_lock(&mutex);
     // printk(" enter #%d\n", size);
     assert(cpt == 0);
@@ -162,8 +168,8 @@ void *malloc(size_t size) {
     assert(cpt == 1);
     cpt = cpt - 1;
     // printk("%x leave \n", ptr);
+    // printf("size %d -> %x\n", size, ptr);
     pthread_mutex_unlock(&mutex);
-
     return ptr;
 }
 
