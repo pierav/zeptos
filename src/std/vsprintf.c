@@ -3,12 +3,14 @@
 
 // TODO: %f https://github.com/ShivanKaul/libslack/blob/master/snprintf.c#L698
 #include "bitset.h"
+#include "printk.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 
@@ -158,6 +160,8 @@ static long long simple_strntoll(const char *cp, size_t max_chars, char **endp,
 long long simple_strtoll(const char *cp, char **endp, unsigned int base) {
     return simple_strntoll(cp, INT_MAX, endp, base);
 }
+
+double simple_strtod(const char *cp, char **endp) { return strtod(cp, endp); }
 
 static int skip_atoi(const char **s) {
     int i = 0;
@@ -1142,7 +1146,9 @@ int sprintf(char *buf, const char *fmt, ...) {
     return i;
 }
 
-int vsscanf(const char *buf, const char *fmt, va_list args) {
+int vsscanf_internal(const char *buf, const char *fmt, va_list args,
+                     char **endptr) {
+    printk("%.50s... : %s\n", buf, fmt);
     const char *str = buf;
     char *next;
     char digit;
@@ -1152,9 +1158,13 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
     union {
         long long s;
         unsigned long long u;
+        double d;
+        float f;
     } val;
     int16_t field_width;
     bool is_sign;
+    bool is_double;
+    bool is_float;
 
     while (*fmt) {
         /* skip any white space in format */
@@ -1185,8 +1195,10 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
                 break;
             while (!isspace(*fmt) && *fmt != '%' && *fmt) {
                 /* '%*[' not yet supported, invalid format */
-                if (*fmt == '[')
+                if (*fmt == '[') {
+                    *endptr = str;
                     return num;
+                }
                 fmt++;
             }
             while (!isspace(*str) && *str)
@@ -1233,7 +1245,8 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
         base = 10;
         is_sign = false;
 
-        switch (*fmt++) {
+        char curchar = *fmt++;
+        switch (curchar) {
         case 'c': {
             char *s = (char *)va_arg(args, char *);
             if (field_width == -1)
@@ -1280,9 +1293,10 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
             bool negate = (*fmt == '^');
 
             /* field width is required */
-            if (field_width == -1)
+            if (field_width == -1) {
+                *endptr = str;
                 return num;
-
+            }
             if (negate)
                 ++fmt;
 
@@ -1290,8 +1304,10 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
                 __set_bit((uint8_t)*fmt, set);
 
             /* no ']' or no character set found */
-            if (!*fmt || !len)
+            if (!*fmt || !len) {
+                *endptr = str;
                 return num;
+            }
             ++fmt;
 
             if (negate) {
@@ -1301,8 +1317,10 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
             }
 
             /* match must be non-empty */
-            if (!test_bit((uint8_t)*str, set))
+            if (!test_bit((uint8_t)*str, set)) {
+                *endptr = str;
                 return num;
+            }
 
             while (test_bit((uint8_t)*str, set) && field_width--)
                 *s++ = *str++;
@@ -1327,11 +1345,16 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
             break;
         case '%':
             /* looking for '%' in str */
-            if (*str++ != '%')
+            if (*str++ != '%') {
+                *endptr = str;
                 return num;
+            }
             continue;
+        case 'f':
+            // fallthrough
         default:
             /* invalid format; stop here */
+            panic("Invalid format : %%%x\n", curchar);
             return num;
         }
 
@@ -1354,12 +1377,17 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
             (base == 0 && !isdigit(digit)))
             break;
 
-        if (is_sign)
+        if (is_float) {
+            panic("Unimplemented\n");
+        } else if (is_double) {
+            panic("Unimplemented\n");
+        } else if (is_sign) {
             val.s = simple_strntoll(
                 str, field_width >= 0 ? field_width : INT_MAX, &next, base);
-        else
+        } else {
             val.u = simple_strntoull(
                 str, field_width >= 0 ? field_width : INT_MAX, &next, base);
+        }
 
         switch (qualifier) {
         case 'H': /* that's 'hh' in format */
@@ -1402,10 +1430,13 @@ int vsscanf(const char *buf, const char *fmt, va_list args) {
             break;
         str = next;
     }
-
+    *endptr = str;
     return num;
 }
-
+int vsscanf(const char *buf, const char *fmt, va_list args) {
+    char *endptr;
+    return vsscanf_internal(buf, fmt, args, &endptr);
+}
 int sscanf(const char *buf, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
