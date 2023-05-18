@@ -1,16 +1,16 @@
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
-int main(void){
+int main(void) {
 
     FILE *fp = fopen("/hello.txt", "r");
-    if(!fp){
+    if (!fp) {
         perror(NULL);
         return 1;
     }
 
     char buff[256];
-    while(fgets(buff, 256, fp)) {
+    while (fgets(buff, 256, fp)) {
         printf("%s", buff);
     }
 

@@ -861,7 +861,9 @@ qualifier:
         break;
     case 'u':
         break;
-
+    case 'f': {
+        printk("TODO\n");
+    }
     case 'n':
         /*
          * Since %n poses a greater security risk than
@@ -909,6 +911,7 @@ static void set_precision(struct printf_spec *spec, int prec) {
     // }
 }
 
+#if 0
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
     unsigned long long num;
     char *str, *end;
@@ -1146,6 +1149,7 @@ int sprintf(char *buf, const char *fmt, ...) {
     return i;
 }
 
+#endif
 int vsscanf_internal(const char *buf, const char *fmt, va_list args,
                      char **endptr) {
     printk("%.50s... : %s\n", buf, fmt);
@@ -1163,7 +1167,6 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
     } val;
     int16_t field_width;
     bool is_sign;
-    bool is_double;
     bool is_float;
 
     while (*fmt) {
@@ -1244,6 +1247,7 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
 
         base = 10;
         is_sign = false;
+        is_float = false;
 
         char curchar = *fmt++;
         switch (curchar) {
@@ -1351,7 +1355,9 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
             }
             continue;
         case 'f':
-            // fallthrough
+            is_sign = true;
+            is_float = true;
+            break;
         default:
             /* invalid format; stop here */
             panic("Invalid format : %%%x\n", curchar);
@@ -1378,9 +1384,9 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
             break;
 
         if (is_float) {
-            panic("Unimplemented\n");
-        } else if (is_double) {
-            panic("Unimplemented\n");
+            printk("try simple_strtod... %s\n", str);
+            val.d = simple_strtod(str, &next);
+            printk("ok %d\n", (int)val.d);
         } else if (is_sign) {
             val.s = simple_strntoll(
                 str, field_width >= 0 ? field_width : INT_MAX, &next, base);
@@ -1389,45 +1395,50 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
                 str, field_width >= 0 ? field_width : INT_MAX, &next, base);
         }
 
-        switch (qualifier) {
-        case 'H': /* that's 'hh' in format */
-            if (is_sign)
-                *va_arg(args, signed char *) = val.s;
-            else
-                *va_arg(args, unsigned char *) = val.u;
-            break;
-        case 'h':
-            if (is_sign)
-                *va_arg(args, short *) = val.s;
-            else
-                *va_arg(args, unsigned short *) = val.u;
-            break;
-        case 'l':
-            if (is_sign)
-                *va_arg(args, long *) = val.s;
-            else
-                *va_arg(args, unsigned long *) = val.u;
-            break;
-        case 'L':
-            if (is_sign)
-                *va_arg(args, long long *) = val.s;
-            else
-                *va_arg(args, unsigned long long *) = val.u;
-            break;
-        case 'z':
-            *va_arg(args, size_t *) = val.u;
-            break;
-        default:
-            if (is_sign)
-                *va_arg(args, int *) = val.s;
-            else
-                *va_arg(args, unsigned int *) = val.u;
-            break;
+        if (is_float) {
+            *va_arg(args, double *) = val.d;
+        } else {
+            switch (qualifier) {
+            case 'H': /* that's 'hh' in format */
+                if (is_sign)
+                    *va_arg(args, signed char *) = val.s;
+                else
+                    *va_arg(args, unsigned char *) = val.u;
+                break;
+            case 'h':
+                if (is_sign)
+                    *va_arg(args, short *) = val.s;
+                else
+                    *va_arg(args, unsigned short *) = val.u;
+                break;
+            case 'l':
+                if (is_sign)
+                    *va_arg(args, long *) = val.s;
+                else
+                    *va_arg(args, unsigned long *) = val.u;
+                break;
+            case 'L':
+                if (is_sign)
+                    *va_arg(args, long long *) = val.s;
+                else
+                    *va_arg(args, unsigned long long *) = val.u;
+                break;
+            case 'z':
+                *va_arg(args, size_t *) = val.u;
+                break;
+            default:
+                if (is_sign)
+                    *va_arg(args, int *) = val.s;
+                else
+                    *va_arg(args, unsigned int *) = val.u;
+                break;
+            }
         }
         num++;
 
         if (!next)
             break;
+        printk("Continue on %s\n", next);
         str = next;
     }
     *endptr = str;
