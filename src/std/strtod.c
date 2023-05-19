@@ -238,6 +238,6 @@ double strtod(const char *nptr, char **endptr) {
         return minus_zero;
 
     double ret = negative ? -num : num;
-    // printk("%.20s -> %f\n", nptr, ret);
+    // printk("%.*s -> %f\n", s - nptr, nptr, ret);
     return ret;
 }

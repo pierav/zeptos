@@ -53,3 +53,5 @@ int clock_settime(clockid_t clk_id, const struct timespec *tp);
 
 time_t time(time_t *tloc);
 char *ctime(const time_t *timep);
+
+clock_t clock(void);

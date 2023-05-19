@@ -171,7 +171,8 @@ void _init(uint64_t cid, uint64_t dtb) {
     // memset(&_bss_start, 0, &_bss_end - &_bss_start);
     printk("Setup dyn memory...\n");
     // TODO Dts &_end + stacks...
-    _malloc_addblock((void *)0x88000000, 16 * 128 * 1024); // Lest add 128 kB
+    _malloc_addblock((void *)0x88000000,
+                     (size_t)2 * 1024 * 1024 * 1024); // Lest add 128 MB
 
     // Initialise file system
     printk("Initialise file system...\n");

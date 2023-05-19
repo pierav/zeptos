@@ -1388,12 +1388,15 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
 
         if (is_float) {
             val.d = simple_strtod(str, &next);
+            // printk("HIT f: %lf\n", val.d);
         } else if (is_sign) {
             val.s = simple_strntoll(
                 str, field_width >= 0 ? field_width : INT_MAX, &next, base);
+            // printk("HIT i: %ld\n", val.s);
         } else {
             val.u = simple_strntoull(
                 str, field_width >= 0 ? field_width : INT_MAX, &next, base);
+            // printk("HIT u: %lu\n", val.u);
         }
 
         if (is_float) {
@@ -1439,7 +1442,6 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
 
         if (!next)
             break;
-        // printk("Continue on %s\n", next);
         str = next;
     }
     *endptr = str;

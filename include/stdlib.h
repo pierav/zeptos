@@ -50,3 +50,6 @@ long long int llabs(long long int j);
 
 char *getenv(const char *name);
 char *secure_getenv(const char *name);
+
+// - register a function to be called at normal process termination
+int atexit(void (*function)(void));

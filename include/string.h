@@ -30,3 +30,13 @@ char *strstr(const char *haystack, const char *needle);
 // - extract tokens from strings
 char *strtok(char *str, const char *delim);
 char *strtok_r(char *str, const char *delim, char **saveptr);
+
+// - get length of a prefix substring
+size_t strspn(const char *s, const char *accept);
+size_t strcspn(const char *s, const char *reject);
+
+// - zero a byte string
+void bzero(void *s, size_t n);
+
+// - copy byte sequence
+void bcopy(const void *src, void *dest, size_t n);

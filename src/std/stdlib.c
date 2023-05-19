@@ -1,4 +1,5 @@
 #include "poweroff.h"
+#include "printk.h"
 #include <ctype.h>
 #include <errno.h>
 #include <float.h>
@@ -164,3 +165,8 @@ int abs(int j) { return j ? j : -j; }
 long int labs(long int j) { return j ? j : -j; }
 
 long long int llabs(long long int j) { return j ? j : -j; }
+
+int atexit(void (*function)(void)) {
+    printk("todo... \n");
+    return 0;
+}

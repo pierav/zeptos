@@ -27,6 +27,7 @@ time_t time(time_t *tloc) {
         *tloc = t;
     return t;
 }
+clock_t clock(void) { return _rdcyc(); }
 
 int clock_gettime(clockid_t clk_id, struct timespec *tp) {
     *tp = _ts;

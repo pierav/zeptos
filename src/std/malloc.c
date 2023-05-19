@@ -65,6 +65,24 @@ static void coalesce_free_list(void) {
     }
 }
 
+uint8_t *base;
+size_t base_res_size;
+
+void *malloc_unsafe_inc(size_t size) {
+    size += 8 - size % 8;
+    // printk("%d, res = %d\n", size, base_res_size);
+
+    if (size > base_res_size) {
+        return NULL;
+    }
+
+    void *ptr = base;
+    base += size;
+    base_res_size -= size;
+
+    return ptr;
+}
+
 void *malloc_unsafe(size_t size) {
     void *ptr = NULL;
     alloc_node_t *blk = NULL;
@@ -118,6 +136,9 @@ void free_unsafe(void *ptr) {
 }
 
 void _malloc_addblock(void *addr, size_t size) {
+    base = addr;
+    base_res_size = size;
+
     alloc_node_t *blk;
 
     /* pointer align the block */
@@ -163,13 +184,17 @@ void *malloc(size_t size) {
     assert(cpt == 0);
     cpt = cpt + 1;
 
-    void *ptr = malloc_unsafe(size);
+    // void *ptr = malloc_unsafe(size);
+    void *ptr = malloc_unsafe_inc(size);
 
     assert(cpt == 1);
     cpt = cpt - 1;
     // printk("%x leave \n", ptr);
     // printf("size %d -> %x\n", size, ptr);
     pthread_mutex_unlock(&mutex);
+    if (!ptr) {
+        panic("** OUT OF MEMORY ***\n");
+    }
     return ptr;
 }
 

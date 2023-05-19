@@ -10,7 +10,7 @@ typedef __unimplemented_t blkcnt_t;
 typedef __unimplemented_t blksize_t;
 // Used for block sizes.
 
-typedef __unimplemented_t clock_t;
+typedef long long clock_t;
 // Used for system times in clock ticks or CLOCKS_PER_SEC; see <time.h> .
 
 typedef __unimplemented_t clockid_t;

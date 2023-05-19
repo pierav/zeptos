@@ -21,6 +21,11 @@ int feof(FILE *stream) {
     return 0;
 }
 
+int ferror(FILE *stream) {
+    // Nothing to do
+    return 0;
+}
+
 int fprintf(FILE *stream, const char *format, ...) {
     va_list vl;
     va_start(vl, format);
@@ -52,11 +57,11 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
     // }
     char *buf = &((char *)fn->base)[stream->pos];
     char *endptr;
-    int delta = vsscanf_internal(buf, format, ap, &endptr);
+    int ret = vsscanf_internal(buf, format, ap, &endptr);
     assert(endptr);
     stream->pos += endptr - buf;
-    // printk("********** Read %d char in stream %x\n", endptr - buf, stream);
-    return delta;
+    // printk("(%.*s, %s) -> #%d\n", endptr - buf, buf, format, ret);
+    return ret;
 }
 
 int fputc(int c, FILE *stream) {
@@ -82,8 +87,11 @@ int vfprintf(FILE *stream, const char *format, va_list ap) {
 }
 
 FILE *fopen(const char *filename, const char *mode) {
-    if (strcmp(mode, "r") != 0) { // For now only read
+
+    if (strcmp(mode, "r") != 0 &&
+        strcmp(mode, "rb") != 0) { // For now only read
         errno = EINVAL;
+        panic("Unimplemented fopen mode %s\n", mode);
         return NULL;
     }
 
@@ -245,6 +253,21 @@ long ftell(FILE *stream) { return stream->pos; }
 void rewind(FILE *stream) {
     stream->pos = 0;
     printk("(%x)\n", stream);
+}
+int fgetpos(FILE *stream, fpos_t *pos) {
+    _fnode_f_t *fn = _file_check_readeable(stream);
+    *pos = stream->pos;
+    return 0;
+}
+int fsetpos(FILE *stream, const fpos_t *pos) {
+    _fnode_f_t *fn = _file_check_readeable(stream);
+    off_t stream_size = fn->metadata.stat.st_size;
+    if (*pos > stream_size) {
+        errno = EINVAL;
+        return EOF;
+    }
+    stream->pos = *pos;
+    return 0;
 }
 
 // int fgetpos(FILE *stream, fpos_t *pos);

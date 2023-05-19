@@ -48,8 +48,7 @@
 // A structure containing information about a file.
 typedef struct FILE FILE;
 
-// TODO
-typedef struct pos fpos_t;
+typedef size_t fpos_t;
 
 extern FILE *stderr; /* Standard output stream. */
 extern FILE *stdin;  /* Standard input stream.*/
@@ -115,8 +114,8 @@ int ungetc(int c, FILE *stream);
 int fseek(FILE *stream, long offset, int whence);
 long ftell(FILE *stream);
 void rewind(FILE *stream);
-// int fgetpos(FILE *stream, fpos_t *pos);
-// int fsetpos(FILE *stream, const fpos_t *pos);
+int fgetpos(FILE *stream, fpos_t *pos);
+int fsetpos(FILE *stream, const fpos_t *pos);
 
 // - binary stream input/output
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
