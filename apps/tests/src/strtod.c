@@ -8,7 +8,8 @@ int main(void) {
     int hit = sscanf(s, "%lf %lf %lf", &x, &y, &z);
     printf("HIT = %d\n", hit);
     assert(hit == 3);
-    printf("%lf %lf %lf", x, y, z);
-
+    printf("REF: %s\n", s);
+    printf("TST: %lf %lf %lf\n", x, y, z);
+    
     return 0;
 }
