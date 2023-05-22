@@ -41,43 +41,48 @@ int main(void)
     printf(" %f",x[i]);
   printf("\n");
   /* Now solve some random equations */
-  for(a1=1;a1<10;a1++) {
-    for(b1=10;b1>0;b1--) {
-      for(c1=5;c1<15;c1+=0.5) {
-	for(d1=-1;d1>-11;d1--) {
-	  SolveCubic(a1, b1, c1, d1, &solutions, x);  
-	  printf("Solutions:");
-	  for(i=0;i<solutions;i++)
-	    printf(" %f",x[i]);
-	  printf("\n");
-	}
+  for(a1=1;a1<8;a1+=2) {
+    for(b1=3;b1>0;b1--) {
+      for(c1=5;c1<6;c1+=0.5) {
+        for(d1=-1;d1>-11;d1--) {
+          SolveCubic(a1, b1, c1, d1, &solutions, x);  
+          // printf("Solutions:");
+          // for(i=0;i<solutions;i++)
+          //   printf(" %f",x[i]);
+          // printf("\n");
+	      }
       }
     }
   }
   
   printf("********* INTEGER SQR ROOTS ***********\n");
-  /* perform some integer square roots */
-  for (i = 0; i < 1001; ++i)
-    {
-      usqrt(i, &q);
-			// remainder differs on some machines
-     // printf("sqrt(%3d) = %2d, remainder = %2d\n",
-     printf("sqrt(%3d) = %2d\n",
-	     i, q.sqrt);
-    }
+  /* Test */
   usqrt(l, &q);
-  //printf("\nsqrt(%lX) = %X, remainder = %X\n", l, q.sqrt, q.frac);
-  printf("\nsqrt(%lX) = %X\n", l, q.sqrt);
+  printf("sqrt(%3d) = %2d\n", l, q.sqrt);
+  printf("sqrt(%lX) = %X, remainder = %X\n", l, q.sqrt, q.frac);
 
+  /* perform some integer square roots */
+  for (i = 0; i < 10000; ++i) {
+    usqrt(i, &q);
+  }
+ 
 
   printf("********* ANGLE CONVERSION ***********\n");
+
+  /* Test */
+  X = 178.f;
+  printf("%3.0f degrees = %.12f radians\n", X, deg2rad(X));
+  X = 2.777;
+  printf("%.12f radians = %3.0f degrees\n", X, rad2deg(X));
+
   /* convert some rads to degrees */
-  for (X = 0.0; X <= 360.0; X += 1.0)
-    printf("%3.0f degrees = %.12f radians\n", X, deg2rad(X));
-  puts("");
-  for (X = 0.0; X <= (2 * PI + 1e-6); X += (PI / 180))
-    printf("%.12f radians = %3.0f degrees\n", X, rad2deg(X));
-  
-  
+  for (X = 0.0; X <= 360.0; X += 1){
+    // printf("%3.0f degrees = %.12f radians\n", X, deg2rad(X));
+    volatile double y = deg2rad(X);
+  }
+  for (X = 0.0; X <= (2 * PI + 1e-6); X += (PI / 180)){
+    volatile double y = rad2deg(X);
+  }
+
   return 0;
 }

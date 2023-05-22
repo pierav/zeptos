@@ -1,5 +1,6 @@
 
-BENCHS = $(shell ls -d */ | sed -s 's|/||')
+BENCHS := $(shell ls -d */ | sed -s 's|/||')
+BENCHS := $(filter-out build, $(BENCHS))
 $(info $(BENCHS))
 
 EXECS = $(foreach b,$(BENCHS), build/$(b).riscv)
@@ -11,10 +12,10 @@ $(info $(EXECS))
 
 build/%.riscv: %/build/exec
 	@mkdir -p $(@D)
-	cp $^ $@
+	ln -s ../$^ $@
 
 run_all: $(EXECS)
-	for test in $^; do echo $$test && spike -p1 $$test; done
+	for test in $^; do echo $$test && time spike -p1 $$test; done
 
 .phony: force
 force:

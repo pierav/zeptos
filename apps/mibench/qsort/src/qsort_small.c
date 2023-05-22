@@ -47,7 +47,7 @@ int main(int argc, char **argv){
   printf("\nSorting %d elements.\n\n",count);
   qsort(array,count,sizeof(struct myStringStruct),compare);
 
-  for(i=0;i<count;i++)
+  for(i=0;i<count;i+=count/10)
     printf("%s", array[i].qstring);
   return 0;
 }
