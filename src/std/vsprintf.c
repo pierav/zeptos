@@ -178,6 +178,7 @@ char *skip_spaces(const char *str) {
         ++str;
     return (char *)str;
 }
+#if 0
 
 const char hex_asc[] = "0123456789abcdef";
 const char hex_asc_upper[] = "0123456789ABCDEF";
@@ -911,7 +912,6 @@ static void set_precision(struct printf_spec *spec, int prec) {
     // }
 }
 
-#if 0
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
     unsigned long long num;
     char *str, *end;
@@ -1151,7 +1151,7 @@ int sprintf(char *buf, const char *fmt, ...) {
 
 #endif
 int vsscanf_internal(const char *buf, const char *fmt, va_list args,
-                     char **endptr) {
+                     const char **endptr) {
     // printk("%.50s... : %s\n", buf, fmt);
     const char *str = buf;
     char *next;
@@ -1448,7 +1448,7 @@ int vsscanf_internal(const char *buf, const char *fmt, va_list args,
     return num;
 }
 int vsscanf(const char *buf, const char *fmt, va_list args) {
-    char *endptr;
+    const char *endptr;
     return vsscanf_internal(buf, fmt, args, &endptr);
 }
 int sscanf(const char *buf, const char *fmt, ...) {

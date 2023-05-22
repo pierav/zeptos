@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+int vsscanf_internal(const char *buf, const char *fmt, va_list args,
+                     const char **endptr);
+
 struct FILE {
     fnode_t *fn;  // File node
     uint64_t pos; // current position in file
@@ -56,7 +59,7 @@ int vfscanf(FILE *stream, const char *format, va_list ap) {
     //     return EOF;
     // }
     char *buf = &((char *)fn->base)[stream->pos];
-    char *endptr;
+    const char *endptr;
     int ret = vsscanf_internal(buf, format, ap, &endptr);
     assert(endptr);
     stream->pos += endptr - buf;

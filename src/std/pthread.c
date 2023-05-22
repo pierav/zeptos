@@ -81,7 +81,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
         }
     }
     if (pid == 0) { // Cannot allocate pid/core 0 for now!
-        printk("Last PID TODO\n");
+        panic("Last PID TODO\n");
         return EAGAIN;
     }
     printk("%x ( %x ) PID=%d\n", f, args, pid);

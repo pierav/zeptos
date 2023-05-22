@@ -225,18 +225,27 @@ time_t mktime(struct tm *tmbuf) {
     return (time_t)seconds;
 }
 
-char *asctime_r(const struct tm *tm, char *buf) {
-    sprintf(buf, "%4d %s %02d %02d:%02d", tm->tm_year + YEAR0,
-            _months[tm->tm_mon], tm->tm_mday, tm->tm_hour, tm->tm_min);
+char *asctime_r_secure(const struct tm *tm, char *buf, size_t n) {
+    snprintf(buf, n, "%4d %s %02d %02d:%02d", tm->tm_year + YEAR0,
+             _months[tm->tm_mon], tm->tm_mday, tm->tm_hour, tm->tm_min);
     return buf;
 }
 
-char *ctime_r(const time_t *timer, char *buf) {
-    struct tm tm;
-    return asctime_r(localtime_r(timer, &tm), buf);
+char *asctime_r(const struct tm *tm, char *buf) {
+    return asctime_r_secure(tm, buf, (size_t)-1);
 }
 
+char *ctime_r_secure(const time_t *timer, char *buf, size_t n) {
+    struct tm tm;
+    return asctime_r_secure(localtime_r(timer, &tm), buf, n);
+}
+
+char *ctime_r(const time_t *timer, char *buf) {
+    return ctime_r_secure(timer, buf, (size_t)-1);
+}
+
+#define CTIME_BUFFER_SIZE 128
 char *ctime(const time_t *timer) {
-    static char buf[16 + 1];
-    return ctime_r(timer, buf);
+    static char buf[CTIME_BUFFER_SIZE];
+    return ctime_r_secure(timer, buf, CTIME_BUFFER_SIZE);
 }

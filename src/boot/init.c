@@ -118,6 +118,21 @@ void _trap(int i) {
     }
 }
 
+// Profiling
+
+static inline uint64_t _rdcyc() {
+    uint64_t val;
+    asm volatile("rdcycle %0" : "=r"(val)::);
+    return val;
+}
+
+typedef enum { TS_BSS = 0, TS_FDT, TS_FS, TS_TIMER, _TS_END } _ts_t;
+uint64_t _ts[_TS_END];
+
+#define tic(tst) _ts[tst] = _rdcyc()
+
+#define tac(tst) _ts[tst] = _rdcyc() - _ts[tst]
+
 void _init(uint64_t cid, uint64_t dtb) {
     int tos;
     // Only core 0 boots
@@ -127,6 +142,11 @@ void _init(uint64_t cid, uint64_t dtb) {
         asm volatile("csrsi mstatus, 8"); // MSTATUS_MIE
         park();
     }
+
+    // BSS
+    tic(TS_BSS);
+    // memset(&_bss_start, 0xdead, &_bss_end - &_bss_start);
+    tac(TS_BSS);
 
     // Check if dtb is valid
     if (fdt_magic((void *)dtb) != FDT_MAGIC) {
@@ -168,7 +188,6 @@ void _init(uint64_t cid, uint64_t dtb) {
     // Init memory
     printk("TOS = %x\n", &tos);
     printk("Init BSS [%x: %x]...\n", &_bss_start, &_bss_end);
-    // memset(&_bss_start, 0, &_bss_end - &_bss_start);
     printk("Setup dyn memory...\n");
     // TODO Dts &_end + stacks...
     _malloc_addblock((void *)0x88000000,
@@ -176,7 +195,9 @@ void _init(uint64_t cid, uint64_t dtb) {
 
     // Initialise file system
     printk("Initialise file system...\n");
+    tic(TS_FS);
     fs_init();
+    tac(TS_FS);
 
     FILE *fp = fopen("/etc/hostname", "r");
     if (!fp) {
@@ -253,6 +274,8 @@ void _init(uint64_t cid, uint64_t dtb) {
     }
     fprintf(stdout, "\n");
 
+    printk("Elapsed time: BSS: %d, FDT: %d, FS: %d\n", _ts[TS_BSS], _ts[TS_FDT],
+           _ts[TS_FS]);
     int ret;
     ret = main(_argc, _argv);
 

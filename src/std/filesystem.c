@@ -39,13 +39,14 @@ char *_string_table_allocate(char *str, size_t size) {
 }
 
 // Root is _fnode_table[0]:
-fnode_t _fnode_table[FNODE_TABLE_SIZE];
-fnode_t *root = &_fnode_table[0];
-size_t _fnode_table_index = 0;
+static fnode_t _fnode_table[FNODE_TABLE_SIZE];
+static fnode_t *root = &_fnode_table[0];
+static size_t _fnode_table_index = 0;
 
 fnode_t *_fnode_table_allocate() {
+    printk("allocate %d\n", _fnode_table_index);
     if (_fnode_table_index >= FNODE_TABLE_SIZE) {
-        panic("_fnode_table overflow\n");
+        panic("_fnode_table overflow %d\n", _fnode_table_index);
     }
     return &_fnode_table[_fnode_table_index++];
 }
@@ -79,9 +80,9 @@ void *fnode_visit(const fnode_t *fn, fs_visitor_f f, void *args) {
 char *_fnode_type_str[] = {"FNODE_D", "FNODE_F"};
 
 void _fs_node_dump(const fnode_t *fn, char *path) {
-    char *mode_s = strmode(fn->metadata.stat.st_mode);
-    char *time_s = ctime(&fn->metadata.stat.st_mtime);
-    printf("fnode %x [%s]: %s %s %s\n", fn, _fnode_type_str[fn->metadata.type],
+    char *mode_s = "xx"; // strmode(fn->metadata.stat.st_mode);
+    char *time_s = "yy"; // ctime(&fn->metadata.stat.st_mtime);
+    printk("fnode %x [%s]: %s %s %p\n", fn, _fnode_type_str[fn->metadata.type],
            mode_s, time_s, path);
 }
 

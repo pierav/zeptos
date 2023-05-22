@@ -35,7 +35,8 @@ $(ZEPTOS_RAMFS_OBJ): $(ZEPTOS_RAMFS_CPIO)
 
 # * Generic
 # 	- Plateform independant
-MODEL 			?= generic
+ZEPTOS_MODEL 	?= generic
+MODEL 			= $(ZEPTOS_MODEL)
 
 ZEPTOS_LIB		:= $(ZETPOS_PATH)/build/libzeptos_$(MODEL).a
 ZEPTOS_INCLUDE 	:= $(ZETPOS_PATH)/include
@@ -61,6 +62,7 @@ ZEPTOS_CFLAGS 	= -DPREALLOCATE=1 -mcmodel=medany \
 			  	  -fno-common -fno-builtin-printf -fno-builtin \
 			  	  -march=rv64imafdc -mabi=lp64d \
 			  	  -fno-tree-loop-distribute-patterns \
+				  -fno-zero-initialized-in-bss \
 			  	  -I$(ZEPTOS_INCLUDE) \
 			  	  $(INCS)
 
